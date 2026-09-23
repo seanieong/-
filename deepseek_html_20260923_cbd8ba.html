@@ -2,42 +2,44 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>月經週期預測與澳門假期月曆</title>
 <style>
   * { box-sizing: border-box; font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
-  body { background: #f9f5f7; display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; }
-  .app { max-width: 900px; width: 100%; background: #fff; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); padding: 16px; }
-  h1 { font-size: 1.2rem; color: #4a2c3a; text-align: center; margin: 0 0 12px; }
+  html, body { margin: 0; padding: 0; }
+  body { background: #f9f5f7; display: flex; flex-direction: column; align-items: stretch; }
+  .app { width: 100%; background: #fff; padding: 10px 8px 16px; }
 
-  .input-row { background: #fdf3f7; border-radius: 14px; padding: 12px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .input-row label { font-size: 0.74rem; color: #8b5e7b; font-weight: 500; display: block; margin-bottom: 3px; }
-  .input-row input { width: 100%; padding: 8px 10px; border: 1px solid #e7c6d5; border-radius: 8px; font-size: 0.88rem; outline: none; }
+  h1 { font-size: 1.1rem; color: #4a2c3a; text-align: center; margin: 0 0 10px; }
+
+  .input-row { background: #fdf3f7; border-radius: 12px; padding: 10px; margin-bottom: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .input-row label { font-size: 0.72rem; color: #8b5e7b; font-weight: 500; display: block; margin-bottom: 3px; }
+  .input-row input { width: 100%; padding: 7px 8px; border: 1px solid #e7c6d5; border-radius: 8px; font-size: 0.85rem; outline: none; }
   .input-row input:focus { border-color: #b989a5; }
-  .input-row button { grid-column: span 2; background: #b989a5; color: #fff; border: none; padding: 10px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
+  .input-row button { grid-column: span 2; background: #b989a5; color: #fff; border: none; padding: 9px; border-radius: 8px; font-size: 0.88rem; font-weight: 500; cursor: pointer; }
   .input-row button:hover { background: #a0758b; }
 
   /* ===== 檢視切換 ===== */
-  .view-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
+  .view-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
   .view-tabs button {
     background: #fdf3f7; color: #8b5e7b; border: 1px solid #e7c6d5;
-    padding: 7px 16px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
   }
   .view-tabs button.active { background: #b989a5; color: #fff; border-color: #b989a5; }
 
   /* ===== 月曆 ===== */
-  .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .nav button { background: none; border: 1px solid #e7c6d5; color: #8b5e7b; font-size: 1.1rem; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; }
+  .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .nav button { background: none; border: 1px solid #e7c6d5; color: #8b5e7b; font-size: 1.05rem; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; }
   .nav button:hover { background: #fdf3f7; }
-  .nav .title { font-size: 1rem; font-weight: 600; color: #4a2c3a; }
+  .nav .title { font-size: 0.95rem; font-weight: 600; color: #4a2c3a; }
 
   .swipe-area { overflow: hidden; touch-action: pan-y; user-select: none; }
-  .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.68rem; font-weight: 600; color: #8b5e7b; margin-bottom: 6px; }
-  .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.66rem; font-weight: 600; color: #8b5e7b; margin-bottom: 4px; }
+  .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
   .cell {
     aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    border-radius: 8px; font-size: 0.78rem; font-weight: 500; background: #fafafa; color: #333;
-    position: relative; padding: 3px 2px; text-align: center; overflow: hidden; line-height: 1.15;
+    border-radius: 6px; font-size: 0.75rem; font-weight: 500; background: #fafafa; color: #333;
+    position: relative; padding: 2px 1px; text-align: center; overflow: hidden; line-height: 1.1;
     cursor: pointer; transition: transform 0.1s;
   }
   .cell:hover { transform: scale(1.03); z-index: 2; }
@@ -53,11 +55,11 @@
   .cell.multi { box-shadow: inset 0 0 0 2px #66bb6a; }
   .cell.today.multi { box-shadow: inset 0 0 0 2px #b989a5, inset 0 0 0 4px #66bb6a; }
 
-  .cell .num { font-size: 0.8rem; font-weight: 700; }
+  .cell .num { font-size: 0.76rem; font-weight: 700; }
   .cell .tags { display: flex; flex-direction: column; gap: 1px; margin-top: 1px; width: 100%; }
   .cell .tag {
-    font-size: 0.46rem; font-weight: 700; display: block;
-    padding: 1px 2px; border-radius: 3px; line-height: 1.1;
+    font-size: 0.44rem; font-weight: 700; display: block;
+    padding: 1px 2px; border-radius: 3px; line-height: 1.05;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .tag-holiday   { background: #a5d6a7; color: #1b5e20; }
@@ -74,34 +76,35 @@
   .year-swipe-area { overflow: hidden; touch-action: pan-y; user-select: none; }
 
   /* 桌面：一行三個月 */
-  .year-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .year-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 
   /* 手機：一行兩個月，盡量縮小 */
   @media (max-width: 700px) {
-    .year-grid { grid-template-columns: repeat(2, 1fr); gap: 4px; }
-    .mini-month { padding: 3px; border-radius: 6px; }
-    .mini-title { font-size: 0.62rem; margin-bottom: 1px; }
-    .mini-weekdays { font-size: 0.42rem; margin-bottom: 1px; }
+    .app { padding: 8px 4px 12px; }
+    .year-grid { grid-template-columns: repeat(2, 1fr); gap: 3px; }
+    .mini-month { padding: 2px; border-radius: 4px; }
+    .mini-title { font-size: 0.56rem; margin-bottom: 0; }
+    .mini-weekdays { font-size: 0.38rem; margin-bottom: 0; }
     .mini-days { gap: 0.5px; }
-    .mini-day { font-size: 0.46rem; border-radius: 2px; }
-    .mini-day .seg { font-size: 0.42rem; }
+    .mini-day { font-size: 0.42rem; border-radius: 2px; border-width: 0.5px; }
+    .mini-day .seg { font-size: 0.38rem; }
   }
 
-  .mini-month { background: #fdf9fb; border-radius: 10px; padding: 8px; }
-  .mini-title { font-size: 0.78rem; font-weight: 700; color: #4a2c3a; text-align: center; margin-bottom: 3px; }
-  .mini-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.52rem; color: #a08090; font-weight: 600; margin-bottom: 2px; }
+  .mini-month { background: #fdf9fb; border-radius: 8px; padding: 6px; }
+  .mini-title { font-size: 0.74rem; font-weight: 700; color: #4a2c3a; text-align: center; margin-bottom: 2px; }
+  .mini-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.5rem; color: #a08090; font-weight: 600; margin-bottom: 1px; }
   .mini-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
 
   /* 年曆日期格：flex 平均分配多色塊 */
   .mini-day {
     aspect-ratio: 1; display: flex; align-items: stretch; justify-content: stretch;
-    font-size: 0.56rem; border-radius: 3px; background: #fff; overflow: hidden;
+    font-size: 0.52rem; border-radius: 3px; background: #fff; overflow: hidden;
     position: relative; border: 1px solid #f0e6ec;
   }
   .mini-day.empty { background: transparent; border: none; }
   .mini-day .seg {
     flex: 1; display: flex; align-items: center; justify-content: center;
-    font-weight: 600; color: #555; font-size: 0.52rem;
+    font-weight: 600; color: #555; font-size: 0.5rem;
     min-width: 0; overflow: hidden;
   }
   .seg.holiday   { background: #e8f5e9; color: #2e7d32; }
@@ -112,9 +115,9 @@
   .mini-day.today .seg { box-shadow: inset 0 0 0 1.5px #b989a5; }
   .mini-day.today { border-color: #b989a5; }
 
-  .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 14px; font-size: 0.68rem; color: #666; }
-  .legend span { display: flex; align-items: center; gap: 4px; }
-  .legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; font-size: 0.66rem; color: #666; }
+  .legend span { display: flex; align-items: center; gap: 3px; }
+  .legend i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
   .legend .m   { background: #f8bbd0; }
   .legend .o   { background: #d1c4e9; }
   .legend .ivf { background: #ffcc80; }
@@ -123,11 +126,11 @@
   /* ===== Modal ===== */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.35);
-    display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px;
+    display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px;
   }
   .modal-overlay.show { display: flex; }
   .modal {
-    background: #fff; border-radius: 16px; padding: 20px 22px;
+    background: #fff; border-radius: 16px; padding: 18px 20px;
     max-width: 340px; width: 100%; box-shadow: 0 15px 40px rgba(0,0,0,0.15);
     text-align: center; animation: pop 0.15s ease-out;
   }
@@ -148,7 +151,7 @@
   }
   .modal .m-close:hover { background: #a0758b; }
 
-  .hint { text-align:center; font-size:0.68rem; color:#aaa; margin:10px 0 0; }
+  .hint { text-align:center; font-size:0.66rem; color:#aaa; margin:8px 0 0; }
 </style>
 </head>
 <body>
@@ -199,7 +202,7 @@
     <div class="year-swipe-area" id="yearSwipeArea">
       <div class="year-grid" id="yearGrid"></div>
     </div>
-    <p class="hint">💡 左右滑動切換年份，點擊日期查看完整資訊（最多 3 色平均分割）</p>
+    <p class="hint">💡 左右滑動切換區間，點擊日期查看完整資訊</p>
   </div>
 
   <div class="legend">
@@ -274,7 +277,7 @@ const IVF_END = 22;
 // ===== 狀態 =====
 const today = new Date();
 let viewYear, viewMonth;
-let yearViewYear;
+let yearStartYear, yearStartMonth;   // 年曆起始月份（從當前月份開始，連續 12 個月）
 let lastPeriod = new Date(DEFAULT_LAST_PERIOD);
 let cycleLen = DEFAULT_CYCLE_LEN;
 
@@ -481,18 +484,26 @@ function buildMiniDay(dateObj, info) {
   return cell;
 }
 
+// 年曆顯示從 yearStartYear / yearStartMonth 開始連續 12 個月
 function renderYear() {
-  yearTitleEl.textContent = `${yearViewYear}年`;
-  yearGridEl.innerHTML = '';
   const monthNames = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  // 標題顯示區間，例如 2026年10月 ～ 2027年9月
+  const endY = yearStartYear + Math.floor((yearStartMonth + 11) / 12);
+  const endM = (yearStartMonth + 11) % 12;
+  yearTitleEl.textContent = `${yearStartYear}年${monthNames[yearStartMonth]} ～ ${endY}年${monthNames[endM]}`;
 
-  for (let m = 0; m < 12; m++) {
+  yearGridEl.innerHTML = '';
+
+  for (let i = 0; i < 12; i++) {
+    const m = (yearStartMonth + i) % 12;
+    const y = yearStartYear + Math.floor((yearStartMonth + i) / 12);
+
     const mini = document.createElement('div');
     mini.className = 'mini-month';
 
     const title = document.createElement('div');
     title.className = 'mini-title';
-    title.textContent = monthNames[m];
+    title.textContent = `${y}年${monthNames[m]}`;
     mini.appendChild(title);
 
     const wd = document.createElement('div');
@@ -507,19 +518,19 @@ function renderYear() {
     const daysWrap = document.createElement('div');
     daysWrap.className = 'mini-days';
 
-    const firstDay = new Date(yearViewYear, m, 1);
-    const lastDay = new Date(yearViewYear, m + 1, 0);
+    const firstDay = new Date(y, m, 1);
+    const lastDay = new Date(y, m + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startWeekday = firstDay.getDay();
 
-    for (let i = 0; i < startWeekday; i++) {
+    for (let j = 0; j < startWeekday; j++) {
       const e = document.createElement('div');
       e.className = 'mini-day empty';
       daysWrap.appendChild(e);
     }
 
     for (let d = 1; d <= daysInMonth; d++) {
-      const dateObj = new Date(yearViewYear, m, d);
+      const dateObj = new Date(y, m, d);
       const info = getDayInfo(dateObj);
       daysWrap.appendChild(buildMiniDay(dateObj, info));
     }
@@ -542,7 +553,9 @@ function switchToYear() {
   tabMonth.classList.remove('active');
   monthView.classList.add('hidden');
   yearView.classList.add('active');
-  yearViewYear = viewYear;
+  // 從當前顯示月份開始
+  yearStartYear = viewYear;
+  yearStartMonth = viewMonth;
   renderYear();
 }
 tabMonth.onclick = switchToMonth;
@@ -560,9 +573,17 @@ nextBtn.onclick = () => {
   renderMonth();
 };
 
-// ===== 年曆事件 =====
-prevYearBtn.onclick = () => { yearViewYear--; renderYear(); };
-nextYearBtn.onclick = () => { yearViewYear++; renderYear(); };
+// ===== 年曆事件（每次前進 / 後退 12 個月）=====
+prevYearBtn.onclick = () => {
+  yearStartMonth -= 12;
+  while (yearStartMonth < 0) { yearStartMonth += 12; yearStartYear--; }
+  renderYear();
+};
+nextYearBtn.onclick = () => {
+  yearStartMonth += 12;
+  while (yearStartMonth > 11) { yearStartMonth -= 12; yearStartYear++; }
+  renderYear();
+};
 
 // ===== 通用滑動綁定 =====
 function bindSwipe(el, onLeft, onRight) {
@@ -604,7 +625,7 @@ function bindSwipe(el, onLeft, onRight) {
 
 // 月曆滑動：左滑 = 下個月、右滑 = 上個月
 bindSwipe(swipeArea, () => nextBtn.click(), () => prevBtn.click());
-// 年曆滑動：左滑 = 下一年、右滑 = 上一年
+// 年曆滑動：左滑 = 下一段 12 個月、右滑 = 上一段 12 個月
 bindSwipe(yearSwipeArea, () => nextYearBtn.click(), () => prevYearBtn.click());
 
 // ===== 計算按鈕 =====
@@ -618,7 +639,8 @@ calcBtn.onclick = () => {
   viewYear = lastPeriod.getFullYear();
   viewMonth = lastPeriod.getMonth();
   if (yearView.classList.contains('active')) {
-    yearViewYear = viewYear;
+    yearStartYear = viewYear;
+    yearStartMonth = viewMonth;
     renderYear();
   } else {
     renderMonth();
@@ -628,7 +650,8 @@ calcBtn.onclick = () => {
 // ===== 初始化 =====
 viewYear = lastPeriod.getFullYear();
 viewMonth = lastPeriod.getMonth();
-yearViewYear = viewYear;
+yearStartYear = viewYear;
+yearStartMonth = viewMonth;
 renderMonth();
 </script>
 </body>
