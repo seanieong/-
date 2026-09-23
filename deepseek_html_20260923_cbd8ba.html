@@ -30,15 +30,14 @@
   .cell.today { box-shadow: inset 0 0 0 2px #b989a5; font-weight: 700; }
   .cell.holiday { background: #ffebee; color: #c62828; }
   .cell.menstrual { background: #fce4ec; color: #c2185b; }
-  .cell.ovulation { background: #e8f5e9; color: #2e7d32; box-shadow: inset 0 0 0 2px #a5d6a7; }
-  .cell.fertile { background: #f1f8e9; color: #33691e; }
+  /* 排卵日改為紫色 */
+  .cell.ovulation { background: #ede7f6; color: #6a1b9a; box-shadow: inset 0 0 0 2px #b39ddb; }
   .cell .tag { font-size: 0.58rem; font-weight: 600; display: block; margin-top: 1px; line-height: 1.1; }
   .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 16px; font-size: 0.72rem; color: #666; }
   .legend span { display: flex; align-items: center; gap: 4px; }
   .legend i { width: 13px; height: 13px; border-radius: 50%; display: inline-block; }
   .legend .m { background: #fce4ec; border: 1px solid #f8bbd0; }
-  .legend .o { background: #e8f5e9; border: 1px solid #a5d6a7; }
-  .legend .f { background: #f1f8e9; border: 1px solid #c5e1a5; }
+  .legend .o { background: #ede7f6; border: 1px solid #b39ddb; }
   .legend .h { background: #ffebee; border: 1px solid #ef9a9a; }
 </style>
 </head>
@@ -72,7 +71,6 @@
   <div class="legend">
     <span><i class="m"></i> 月經期</span>
     <span><i class="o"></i> 排卵日</span>
-    <span><i class="f"></i> 易孕期</span>
     <span><i class="h"></i> 公眾假期</span>
   </div>
 </div>
@@ -149,7 +147,7 @@ function sameDay(a, b) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-// 判斷是否為月經期（每月經週期前 periodLen 天，預設 5 天）
+// 月經期：每個週期前 5 天
 function isMenstrual(date) {
   const diff = Math.floor((date - lastPeriod) / 86400000);
   if (diff < 0) return false;
@@ -163,17 +161,6 @@ function isOvulation(date) {
   if (diff < 0) return false;
   const dayInCycle = diff % cycleLen;
   return dayInCycle === (cycleLen - 14);
-}
-
-// 易孕期：排卵日前 5 天至後 1 天
-function isFertile(date) {
-  const diff = Math.floor((date - lastPeriod) / 86400000);
-  if (diff < 0) return false;
-  const dayInCycle = diff % cycleLen;
-  const ovu = cycleLen - 14;
-  const start = Math.max(0, ovu - 5);
-  const end = Math.min(cycleLen - 1, ovu + 1);
-  return dayInCycle >= start && dayInCycle <= end;
 }
 
 // ===== 渲染 =====
@@ -199,29 +186,21 @@ function render() {
     const dateObj = new Date(viewYear, viewMonth, d);
     const key = dateKey(viewYear, viewMonth, d);
 
-    // 假期文字
     const holidayName = HOLIDAYS[key];
-
-    // 各狀態判斷
     const men = isMenstrual(dateObj);
     const ovu = isOvulation(dateObj);
-    const fer = isFertile(dateObj);
 
-    // 樣式優先順序：假期底色 > 排卵 > 月經 > 易孕
-    // 但我們讓排卵/月經的底色也能顯現，用特定 class 疊加
     if (holidayName) cell.classList.add('holiday');
     if (men) cell.classList.add('menstrual');
     if (ovu) cell.classList.add('ovulation');
-    else if (fer) cell.classList.add('fertile');
-
     if (sameDay(dateObj, today)) cell.classList.add('today');
 
-    // 內容：日期數字
+    // 日期數字
     const numSpan = document.createElement('span');
     numSpan.textContent = d;
     cell.appendChild(numSpan);
 
-    // 文字標籤：優先顯示假期名，其次排卵日
+    // 文字標籤：優先顯示假期名，其次排卵日，最後月經
     if (holidayName) {
       const tag = document.createElement('span');
       tag.className = 'tag';
@@ -236,11 +215,6 @@ function render() {
       const tag = document.createElement('span');
       tag.className = 'tag';
       tag.textContent = '月經';
-      cell.appendChild(tag);
-    } else if (fer) {
-      const tag = document.createElement('span');
-      tag.className = 'tag';
-      tag.textContent = '易孕';
       cell.appendChild(tag);
     }
 
