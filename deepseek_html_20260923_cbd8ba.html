@@ -31,7 +31,7 @@
   .nav button:hover { background: #fdf3f7; }
   .nav .title { font-size: 1.1rem; font-weight: 600; color: #4a2c3a; }
 
-  .swipe-area { overflow: hidden; touch-action: pan-y; }
+  .swipe-area { overflow: hidden; touch-action: pan-y; user-select: none; }
   .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.72rem; font-weight: 600; color: #8b5e7b; margin-bottom: 6px; }
   .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
   .cell {
@@ -71,6 +71,7 @@
   .month-view { display: block; }
   .month-view.hidden { display: none; }
 
+  .year-swipe-area { overflow: hidden; touch-action: pan-y; user-select: none; }
   .year-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   @media (max-width: 700px) { .year-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
   @media (max-width: 420px) { .year-grid { grid-template-columns: 1fr; } }
@@ -80,7 +81,7 @@
   .mini-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.55rem; color: #a08090; font-weight: 600; margin-bottom: 2px; }
   .mini-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
 
-  /* 年曆日期格：使用 flex 平均分配多色塊 */
+  /* 年曆日期格：使用 flex 平均分配多色塊（最多 3 塊） */
   .mini-day {
     aspect-ratio: 1; display: flex; align-items: stretch; justify-content: stretch;
     font-size: 0.6rem; border-radius: 4px; background: #fff; overflow: hidden;
@@ -89,7 +90,8 @@
   .mini-day.empty { background: transparent; border: none; }
   .mini-day .seg {
     flex: 1; display: flex; align-items: center; justify-content: center;
-    font-weight: 600; color: #555; font-size: 0.6rem;
+    font-weight: 600; color: #555; font-size: 0.58rem;
+    min-width: 0; overflow: hidden;
   }
   .seg.holiday   { background: #e8f5e9; color: #2e7d32; }
   .seg.ivf       { background: #fff3e0; color: #e65100; }
@@ -183,8 +185,10 @@
       <span class="title" id="yearTitle"></span>
       <button id="nextYearBtn">›</button>
     </div>
-    <div class="year-grid" id="yearGrid"></div>
-    <p class="hint">💡 點擊任一日期可查看完整資訊（色塊依優先級平均分割）</p>
+    <div class="year-swipe-area" id="yearSwipeArea">
+      <div class="year-grid" id="yearGrid"></div>
+    </div>
+    <p class="hint">💡 左右滑動切換年份，點擊日期查看完整資訊（最多 3 色平均分割）</p>
   </div>
 
   <div class="legend">
@@ -280,6 +284,7 @@ const tabYear = document.getElementById('tabYear');
 const monthView = document.getElementById('monthView');
 const yearView = document.getElementById('yearView');
 const swipeArea = document.getElementById('swipeArea');
+const yearSwipeArea = document.getElementById('yearSwipeArea');
 const modalOverlay = document.getElementById('modalOverlay');
 const modalDate = document.getElementById('modalDate');
 const modalList = document.getElementById('modalList');
@@ -312,7 +317,6 @@ function isIVF(date) {
   return d >= IVF_START && d <= IVF_END;
 }
 
-// 收集某日的所有資訊
 function getDayInfo(dateObj) {
   const key = dateKey(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
   const holidayName = HOLIDAYS[key];
@@ -427,39 +431,40 @@ function renderMonth() {
 }
 
 // ===== 年曆渲染 =====
-// 年曆格：使用 flex 平均分配色塊，優先級 公眾假期 > 植入日 > 排卵日 > 月經
+// 依優先級 公眾假期 > 植入日 > 排卵日 建立最多 3 個色塊
 function buildMiniDay(dateObj, info) {
   const cell = document.createElement('div');
   cell.className = 'mini-day';
   if (sameDay(dateObj, today)) cell.classList.add('today');
 
-  // 建立分段清單（依優先級），非特殊狀態一律 plain
+  // 依優先級收集特殊狀態（最多 3 個）
   const segments = [];
   if (info.holidayName) segments.push({ cls: 'holiday', text: '假' });
   if (info.ivf) segments.push({ cls: 'ivf', text: '植' });
   if (info.ovu) segments.push({ cls: 'ovulation', text: '卵' });
-  if (info.men && segments.length === 0) segments.push({ cls: 'menstrual', text: '經' });
+  // 若沒有任何特殊狀態，但有月經，顯示月經
+  if (segments.length === 0 && info.men) segments.push({ cls: 'menstrual', text: '經' });
 
-  // 沒有特殊狀態：單純顯示日期數字
   if (segments.length === 0) {
+    // 一般日子：只顯示日期數字
     const seg = document.createElement('div');
     seg.className = 'seg plain';
     seg.textContent = dateObj.getDate();
     cell.appendChild(seg);
   } else if (segments.length === 1) {
+    // 單一狀態：顯示日期數字，用該狀態顏色
     const seg = document.createElement('div');
     seg.className = 'seg ' + segments[0].cls;
     seg.textContent = dateObj.getDate();
     cell.appendChild(seg);
   } else {
-    // 多個狀態：平均分割空間，每個色塊顯示狀態字
+    // 多個狀態：平均分割空間，每塊顯示單字
     segments.forEach(s => {
       const seg = document.createElement('div');
       seg.className = 'seg ' + s.cls;
       seg.textContent = s.text;
       cell.appendChild(seg);
     });
-    // 將日期數字放在 title 屬性中
     cell.title = dateObj.getDate() + '日';
   }
 
@@ -553,44 +558,49 @@ nextBtn.onclick = () => {
 prevYearBtn.onclick = () => { yearViewYear--; renderYear(); };
 nextYearBtn.onclick = () => { yearViewYear++; renderYear(); };
 
-// ===== 左右滑動 =====
-let touchStartX = 0, touchStartY = 0, touchMoved = false;
-swipeArea.addEventListener('touchstart', (e) => {
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-  touchMoved = false;
-}, { passive: true });
-swipeArea.addEventListener('touchmove', (e) => {
-  const dx = e.touches[0].clientX - touchStartX;
-  const dy = e.touches[0].clientY - touchStartY;
-  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
-    touchMoved = true;
-  }
-}, { passive: true });
-swipeArea.addEventListener('touchend', (e) => {
-  if (!touchMoved) return;
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  if (Math.abs(dx) > 50) {
-    if (dx < 0) nextBtn.click();
-    else prevBtn.click();
-  }
-});
+// ===== 通用滑動綁定 =====
+function bindSwipe(el, onLeft, onRight) {
+  let startX = 0, startY = 0, moved = false;
+  // 觸控
+  el.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    moved = false;
+  }, { passive: true });
+  el.addEventListener('touchmove', (e) => {
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) moved = true;
+  }, { passive: true });
+  el.addEventListener('touchend', (e) => {
+    if (!moved) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) {
+      if (dx < 0) onLeft();
+      else onRight();
+    }
+  });
+  // 滑鼠拖曳
+  let mouseDown = false, mouseStartX = 0;
+  el.addEventListener('mousedown', (e) => {
+    mouseDown = true;
+    mouseStartX = e.clientX;
+  });
+  window.addEventListener('mouseup', (e) => {
+    if (!mouseDown) return;
+    mouseDown = false;
+    const dx = e.clientX - mouseStartX;
+    if (Math.abs(dx) > 80) {
+      if (dx < 0) onLeft();
+      else onRight();
+    }
+  });
+}
 
-// 滑鼠拖曳（桌面版）
-let mouseDown = false, mouseStartX = 0;
-swipeArea.addEventListener('mousedown', (e) => {
-  mouseDown = true;
-  mouseStartX = e.clientX;
-});
-window.addEventListener('mouseup', (e) => {
-  if (!mouseDown) return;
-  mouseDown = false;
-  const dx = e.clientX - mouseStartX;
-  if (Math.abs(dx) > 80) {
-    if (dx < 0) nextBtn.click();
-    else prevBtn.click();
-  }
-});
+// 月曆滑動：左滑 = 下個月、右滑 = 上個月
+bindSwipe(swipeArea, () => nextBtn.click(), () => prevBtn.click());
+// 年曆滑動：左滑 = 下一年、右滑 = 上一年
+bindSwipe(yearSwipeArea, () => nextYearBtn.click(), () => prevYearBtn.click());
 
 // ===== 計算按鈕 =====
 calcBtn.onclick = () => {
