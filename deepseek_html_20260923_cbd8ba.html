@@ -6,37 +6,37 @@
 <title>月經週期預測與澳門假期月曆</title>
 <style>
   * { box-sizing: border-box; font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
-  body { background: #f9f5f7; display: flex; flex-direction: column; align-items: center; padding: 16px; margin: 0; }
-  .app { max-width: 900px; width: 100%; background: #fff; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); padding: 20px; }
-  h1 { font-size: 1.4rem; color: #4a2c3a; text-align: center; margin: 0 0 16px; }
+  body { background: #f9f5f7; display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; }
+  .app { max-width: 900px; width: 100%; background: #fff; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); padding: 16px; }
+  h1 { font-size: 1.2rem; color: #4a2c3a; text-align: center; margin: 0 0 12px; }
 
-  .input-row { background: #fdf3f7; border-radius: 14px; padding: 14px; margin-bottom: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .input-row label { font-size: 0.78rem; color: #8b5e7b; font-weight: 500; display: block; margin-bottom: 3px; }
-  .input-row input { width: 100%; padding: 8px 10px; border: 1px solid #e7c6d5; border-radius: 8px; font-size: 0.92rem; outline: none; }
+  .input-row { background: #fdf3f7; border-radius: 14px; padding: 12px; margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .input-row label { font-size: 0.74rem; color: #8b5e7b; font-weight: 500; display: block; margin-bottom: 3px; }
+  .input-row input { width: 100%; padding: 8px 10px; border: 1px solid #e7c6d5; border-radius: 8px; font-size: 0.88rem; outline: none; }
   .input-row input:focus { border-color: #b989a5; }
-  .input-row button { grid-column: span 2; background: #b989a5; color: #fff; border: none; padding: 10px; border-radius: 8px; font-size: 0.95rem; font-weight: 500; cursor: pointer; }
+  .input-row button { grid-column: span 2; background: #b989a5; color: #fff; border: none; padding: 10px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
   .input-row button:hover { background: #a0758b; }
 
   /* ===== 檢視切換 ===== */
-  .view-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; }
+  .view-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
   .view-tabs button {
     background: #fdf3f7; color: #8b5e7b; border: 1px solid #e7c6d5;
-    padding: 7px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    padding: 7px 16px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
   }
   .view-tabs button.active { background: #b989a5; color: #fff; border-color: #b989a5; }
 
   /* ===== 月曆 ===== */
   .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .nav button { background: none; border: 1px solid #e7c6d5; color: #8b5e7b; font-size: 1.2rem; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; }
+  .nav button { background: none; border: 1px solid #e7c6d5; color: #8b5e7b; font-size: 1.1rem; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; }
   .nav button:hover { background: #fdf3f7; }
-  .nav .title { font-size: 1.1rem; font-weight: 600; color: #4a2c3a; }
+  .nav .title { font-size: 1rem; font-weight: 600; color: #4a2c3a; }
 
   .swipe-area { overflow: hidden; touch-action: pan-y; user-select: none; }
-  .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.72rem; font-weight: 600; color: #8b5e7b; margin-bottom: 6px; }
+  .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.68rem; font-weight: 600; color: #8b5e7b; margin-bottom: 6px; }
   .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
   .cell {
     aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    border-radius: 8px; font-size: 0.82rem; font-weight: 500; background: #fafafa; color: #333;
+    border-radius: 8px; font-size: 0.78rem; font-weight: 500; background: #fafafa; color: #333;
     position: relative; padding: 3px 2px; text-align: center; overflow: hidden; line-height: 1.15;
     cursor: pointer; transition: transform 0.1s;
   }
@@ -53,10 +53,10 @@
   .cell.multi { box-shadow: inset 0 0 0 2px #66bb6a; }
   .cell.today.multi { box-shadow: inset 0 0 0 2px #b989a5, inset 0 0 0 4px #66bb6a; }
 
-  .cell .num { font-size: 0.85rem; font-weight: 700; }
+  .cell .num { font-size: 0.8rem; font-weight: 700; }
   .cell .tags { display: flex; flex-direction: column; gap: 1px; margin-top: 1px; width: 100%; }
   .cell .tag {
-    font-size: 0.5rem; font-weight: 700; display: block;
+    font-size: 0.46rem; font-weight: 700; display: block;
     padding: 1px 2px; border-radius: 3px; line-height: 1.1;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
@@ -72,25 +72,36 @@
   .month-view.hidden { display: none; }
 
   .year-swipe-area { overflow: hidden; touch-action: pan-y; user-select: none; }
-  .year-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  @media (max-width: 700px) { .year-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
-  @media (max-width: 420px) { .year-grid { grid-template-columns: 1fr; } }
+
+  /* 桌面：一行三個月 */
+  .year-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+  /* 手機：一行兩個月，盡量縮小 */
+  @media (max-width: 700px) {
+    .year-grid { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+    .mini-month { padding: 3px; border-radius: 6px; }
+    .mini-title { font-size: 0.62rem; margin-bottom: 1px; }
+    .mini-weekdays { font-size: 0.42rem; margin-bottom: 1px; }
+    .mini-days { gap: 0.5px; }
+    .mini-day { font-size: 0.46rem; border-radius: 2px; }
+    .mini-day .seg { font-size: 0.42rem; }
+  }
 
   .mini-month { background: #fdf9fb; border-radius: 10px; padding: 8px; }
-  .mini-title { font-size: 0.82rem; font-weight: 700; color: #4a2c3a; text-align: center; margin-bottom: 4px; }
-  .mini-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.55rem; color: #a08090; font-weight: 600; margin-bottom: 2px; }
+  .mini-title { font-size: 0.78rem; font-weight: 700; color: #4a2c3a; text-align: center; margin-bottom: 3px; }
+  .mini-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.52rem; color: #a08090; font-weight: 600; margin-bottom: 2px; }
   .mini-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
 
-  /* 年曆日期格：使用 flex 平均分配多色塊（最多 3 塊） */
+  /* 年曆日期格：flex 平均分配多色塊 */
   .mini-day {
     aspect-ratio: 1; display: flex; align-items: stretch; justify-content: stretch;
-    font-size: 0.6rem; border-radius: 4px; background: #fff; overflow: hidden;
+    font-size: 0.56rem; border-radius: 3px; background: #fff; overflow: hidden;
     position: relative; border: 1px solid #f0e6ec;
   }
   .mini-day.empty { background: transparent; border: none; }
   .mini-day .seg {
     flex: 1; display: flex; align-items: center; justify-content: center;
-    font-weight: 600; color: #555; font-size: 0.58rem;
+    font-weight: 600; color: #555; font-size: 0.52rem;
     min-width: 0; overflow: hidden;
   }
   .seg.holiday   { background: #e8f5e9; color: #2e7d32; }
@@ -101,9 +112,9 @@
   .mini-day.today .seg { box-shadow: inset 0 0 0 1.5px #b989a5; }
   .mini-day.today { border-color: #b989a5; }
 
-  .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 16px; font-size: 0.72rem; color: #666; }
+  .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 14px; font-size: 0.68rem; color: #666; }
   .legend span { display: flex; align-items: center; gap: 4px; }
-  .legend i { width: 13px; height: 13px; border-radius: 50%; display: inline-block; }
+  .legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
   .legend .m   { background: #f8bbd0; }
   .legend .o   { background: #d1c4e9; }
   .legend .ivf { background: #ffcc80; }
@@ -137,7 +148,7 @@
   }
   .modal .m-close:hover { background: #a0758b; }
 
-  .hint { text-align:center; font-size:0.72rem; color:#aaa; margin:10px 0 0; }
+  .hint { text-align:center; font-size:0.68rem; color:#aaa; margin:10px 0 0; }
 </style>
 </head>
 <body>
@@ -431,34 +442,29 @@ function renderMonth() {
 }
 
 // ===== 年曆渲染 =====
-// 依優先級 公眾假期 > 植入日 > 排卵日 建立最多 3 個色塊
 function buildMiniDay(dateObj, info) {
   const cell = document.createElement('div');
   cell.className = 'mini-day';
   if (sameDay(dateObj, today)) cell.classList.add('today');
 
-  // 依優先級收集特殊狀態（最多 3 個）
+  // 依優先級 公眾假期 > 植入日 > 排卵日，最多 3 個
   const segments = [];
   if (info.holidayName) segments.push({ cls: 'holiday', text: '假' });
   if (info.ivf) segments.push({ cls: 'ivf', text: '植' });
   if (info.ovu) segments.push({ cls: 'ovulation', text: '卵' });
-  // 若沒有任何特殊狀態，但有月經，顯示月經
   if (segments.length === 0 && info.men) segments.push({ cls: 'menstrual', text: '經' });
 
   if (segments.length === 0) {
-    // 一般日子：只顯示日期數字
     const seg = document.createElement('div');
     seg.className = 'seg plain';
     seg.textContent = dateObj.getDate();
     cell.appendChild(seg);
   } else if (segments.length === 1) {
-    // 單一狀態：顯示日期數字，用該狀態顏色
     const seg = document.createElement('div');
     seg.className = 'seg ' + segments[0].cls;
     seg.textContent = dateObj.getDate();
     cell.appendChild(seg);
   } else {
-    // 多個狀態：平均分割空間，每塊顯示單字
     segments.forEach(s => {
       const seg = document.createElement('div');
       seg.className = 'seg ' + s.cls;
@@ -561,7 +567,6 @@ nextYearBtn.onclick = () => { yearViewYear++; renderYear(); };
 // ===== 通用滑動綁定 =====
 function bindSwipe(el, onLeft, onRight) {
   let startX = 0, startY = 0, moved = false;
-  // 觸控
   el.addEventListener('touchstart', (e) => {
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
