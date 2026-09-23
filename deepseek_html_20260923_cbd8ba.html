@@ -25,25 +25,27 @@
     aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     border-radius: 8px; font-size: 0.82rem; font-weight: 500; background: #fafafa; color: #333;
     position: relative; padding: 3px 2px; text-align: center; overflow: hidden; line-height: 1.15;
+    cursor: pointer; transition: transform 0.1s;
   }
-  .cell.empty { background: transparent; }
+  .cell:hover { transform: scale(1.03); z-index: 2; }
+  .cell.empty { background: transparent; cursor: default; }
+  .cell.empty:hover { transform: none; }
   .cell.today { box-shadow: inset 0 0 0 2px #b989a5; font-weight: 700; }
 
-  /* 底色：多種狀態可疊加，用 inset box-shadow 顯示多重顏色邊框 */
   .cell.menstrual { background: #fce4ec; color: #c2185b; }
   .cell.holiday   { background: #e8f5e9; color: #2e7d32; }
   .cell.ovulation { background: #ede7f6; color: #6a1b9a; }
   .cell.ivf       { background: #fff3e0; color: #e65100; }
 
-  /* 多重顏色邊框：假期綠 + 排卵紫 + 植入橙 */
   .cell.multi { box-shadow: inset 0 0 0 2px #66bb6a; }
+  .cell.today.multi { box-shadow: inset 0 0 0 2px #b989a5, inset 0 0 0 4px #66bb6a; }
 
   .cell .num { font-size: 0.85rem; font-weight: 700; }
   .cell .tags { display: flex; flex-direction: column; gap: 1px; margin-top: 1px; width: 100%; }
   .cell .tag {
     font-size: 0.52rem; font-weight: 700; display: block;
-    padding: 1px 2px; border-radius: 3px; line-height: 1.1; white-space: nowrap;
-    overflow: hidden; text-overflow: ellipsis;
+    padding: 1px 2px; border-radius: 3px; line-height: 1.1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .tag-holiday   { background: #a5d6a7; color: #1b5e20; }
   .tag-ovulation { background: #d1c4e9; color: #4a148c; }
@@ -57,6 +59,34 @@
   .legend .o   { background: #d1c4e9; }
   .legend .ivf { background: #ffcc80; }
   .legend .h   { background: #a5d6a7; }
+
+  /* ===== Modal ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+    display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 16px; padding: 20px 22px;
+    max-width: 340px; width: 100%; box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    text-align: center; animation: pop 0.15s ease-out;
+  }
+  @keyframes pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal .m-date { font-size: 0.85rem; color: #8b5e7b; margin-bottom: 10px; font-weight: 600; }
+  .modal .m-list { display: flex; flex-direction: column; gap: 6px; }
+  .modal .m-item {
+    padding: 8px 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+    word-break: break-word; text-align: left;
+  }
+  .modal .m-item.holiday   { background: #e8f5e9; color: #1b5e20; }
+  .modal .m-item.ovulation { background: #ede7f6; color: #4a148c; }
+  .modal .m-item.ivf       { background: #fff3e0; color: #bf360c; }
+  .modal .m-item.menstrual { background: #fce4ec; color: #880e4f; }
+  .modal .m-close {
+    margin-top: 14px; background: #b989a5; color: #fff; border: none;
+    padding: 8px 20px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; font-weight: 500;
+  }
+  .modal .m-close:hover { background: #a0758b; }
 </style>
 </head>
 <body>
@@ -92,12 +122,21 @@
     <span><i class="ivf"></i> IVF 植入日</span>
     <span><i class="h"></i> 公眾假期</span>
   </div>
+  <p style="text-align:center;font-size:0.72rem;color:#aaa;margin:10px 0 0;">💡 點擊日期格子可查看完整文字</p>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="m-date" id="modalDate"></div>
+    <div class="m-list" id="modalList"></div>
+    <button class="m-close" id="modalClose">關閉</button>
+  </div>
 </div>
 
 <script>
 // ===== 澳門公眾假期（2026-2027）=====
 const HOLIDAYS = {
-  // 2026
   '2026-01-01': '元旦',
   '2026-02-17': '農曆正月初一',
   '2026-02-18': '農曆正月初二',
@@ -118,7 +157,6 @@ const HOLIDAYS = {
   '2026-12-22': '冬至',
   '2026-12-24': '聖誕節前日',
   '2026-12-25': '聖誕節',
-  // 2027
   '2027-01-01': '元旦',
   '2027-02-06': '農曆正月初一',
   '2027-02-07': '農曆正月初二',
@@ -144,9 +182,9 @@ const HOLIDAYS = {
 // ===== 預設值 =====
 const DEFAULT_LAST_PERIOD = '2026-09-15';
 const DEFAULT_CYCLE_LEN = 27;
-const PERIOD_LEN = 5;          // 月經期長度（天）
-const IVF_START = 18;          // 植入日開始（月經第一天計）
-const IVF_END = 22;            // 植入日結束
+const PERIOD_LEN = 5;
+const IVF_START = 18;
+const IVF_END = 22;
 
 // ===== 狀態 =====
 const today = new Date();
@@ -162,6 +200,10 @@ const cycleInput = document.getElementById('cycleLen');
 const calcBtn = document.getElementById('calcBtn');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
+const modalOverlay = document.getElementById('modalOverlay');
+const modalDate = document.getElementById('modalDate');
+const modalList = document.getElementById('modalList');
+const modalClose = document.getElementById('modalClose');
 
 lastPeriodInput.value = DEFAULT_LAST_PERIOD;
 cycleInput.value = DEFAULT_CYCLE_LEN;
@@ -172,14 +214,11 @@ function dateKey(y, m, d) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
 function sameDay(a, b) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
-
-// 取得該日期在週期中的天數（1-based）
 function getDayInCycle(date) {
   const diff = Math.floor((date - lastPeriod) / 86400000);
   if (diff < 0) return -1;
   return (diff % cycleLen) + 1;
 }
-
 function isMenstrual(date) {
   const d = getDayInCycle(date);
   return d >= 1 && d <= PERIOD_LEN;
@@ -192,6 +231,32 @@ function isIVF(date) {
   const d = getDayInCycle(date);
   return d >= IVF_START && d <= IVF_END;
 }
+
+// ===== Modal 顯示 =====
+function showModal(dateObj, items) {
+  const y = dateObj.getFullYear();
+  const m = dateObj.getMonth() + 1;
+  const d = dateObj.getDate();
+  const weekdays = ['日','一','二','三','四','五','六'];
+  const wd = weekdays[dateObj.getDay()];
+  modalDate.textContent = `${y}年${m}月${d}日（星期${wd}）`;
+  modalList.innerHTML = '';
+  items.forEach(it => {
+    const div = document.createElement('div');
+    div.className = 'm-item ' + it.type;
+    div.textContent = it.text;
+    modalList.appendChild(div);
+  });
+  modalOverlay.classList.add('show');
+}
+
+modalClose.onclick = () => modalOverlay.classList.remove('show');
+modalOverlay.onclick = (e) => {
+  if (e.target === modalOverlay) modalOverlay.classList.remove('show');
+};
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') modalOverlay.classList.remove('show');
+});
 
 // ===== 渲染 =====
 function render() {
@@ -221,16 +286,14 @@ function render() {
     const ovu = isOvulation(dateObj);
     const ivf = isIVF(dateObj);
 
-    // 底色（可疊加，順序影響覆蓋；這裡以最後加入的為主底色）
+    // 底色（後加入的優先）
     if (men) cell.classList.add('menstrual');
     if (holidayName) cell.classList.add('holiday');
     if (ovu) cell.classList.add('ovulation');
     if (ivf) cell.classList.add('ivf');
 
-    // 如果同時有 2 種以上的特殊身份，加多重邊框
     const specialCount = [holidayName, ovu, ivf].filter(Boolean).length;
     if (specialCount >= 2) cell.classList.add('multi');
-
     if (sameDay(dateObj, today)) cell.classList.add('today');
 
     // 日期數字
@@ -239,36 +302,47 @@ function render() {
     num.textContent = d;
     cell.appendChild(num);
 
-    // 標籤容器：同時顯示多個標籤
-    const tags = document.createElement('div');
-    tags.className = 'tags';
+    // 收集標籤資料（用於 Modal）
+    const items = [];
 
-    if (holidayName) {
-      const t = document.createElement('span');
-      t.className = 'tag tag-holiday';
-      t.textContent = holidayName;
-      tags.appendChild(t);
-    }
-    if (ivf) {
-      const t = document.createElement('span');
-      t.className = 'tag tag-ivf';
-      t.textContent = '植入日';
-      tags.appendChild(t);
-    }
-    if (ovu) {
-      const t = document.createElement('span');
-      t.className = 'tag tag-ovulation';
-      t.textContent = '排卵日';
-      tags.appendChild(t);
-    }
-    if (men) {
-      const t = document.createElement('span');
-      t.className = 'tag tag-menstrual';
-      t.textContent = '月經';
-      tags.appendChild(t);
-    }
+    if (holidayName) items.push({ type: 'holiday', text: '🎉 ' + holidayName });
+    if (ivf) items.push({ type: 'ivf', text: '🧬 IVF 植入日（週期第 ' + getDayInCycle(dateObj) + ' 天）' });
+    if (ovu) items.push({ type: 'ovulation', text: '🥚 預測排卵日（週期第 ' + getDayInCycle(dateObj) + ' 天）' });
+    if (men) items.push({ type: 'menstrual', text: '🩸 月經期（週期第 ' + getDayInCycle(dateObj) + ' 天）' });
 
-    if (tags.children.length > 0) cell.appendChild(tags);
+    // 標籤容器
+    if (items.length > 0) {
+      const tags = document.createElement('div');
+      tags.className = 'tags';
+      if (holidayName) {
+        const t = document.createElement('span');
+        t.className = 'tag tag-holiday';
+        t.textContent = holidayName;
+        tags.appendChild(t);
+      }
+      if (ivf) {
+        const t = document.createElement('span');
+        t.className = 'tag tag-ivf';
+        t.textContent = '植入日';
+        tags.appendChild(t);
+      }
+      if (ovu) {
+        const t = document.createElement('span');
+        t.className = 'tag tag-ovulation';
+        t.textContent = '排卵日';
+        tags.appendChild(t);
+      }
+      if (men) {
+        const t = document.createElement('span');
+        t.className = 'tag tag-menstrual';
+        t.textContent = '月經';
+        tags.appendChild(t);
+      }
+      cell.appendChild(tags);
+
+      // 點擊顯示完整資訊
+      cell.onclick = () => showModal(dateObj, items);
+    }
 
     gridEl.appendChild(cell);
   }
@@ -297,7 +371,7 @@ calcBtn.onclick = () => {
   render();
 };
 
-// 初始化：跳到 2026 年 9 月
+// 初始化
 viewYear = lastPeriod.getFullYear();
 viewMonth = lastPeriod.getMonth();
 render();
