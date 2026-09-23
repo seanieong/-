@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月經週期預測與澳門假期月曆</title>
+<style>
+  * { box-sizing: border-box; font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
+  body { background: #f9f5f7; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+  .app { max-width: 780px; width: 100%; background: #fff; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); padding: 20px; }
+  h1 { font-size: 1.5rem; color: #4a2c3a; text-align: center; margin: 0 0 16px; }
+  .input-row { background: #fdf3f7; border-radius: 14px; padding: 14px; margin-bottom: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .input-row label { font-size: 0.78rem; color: #8b5e7b; font-weight: 500; display: block; margin-bottom: 3px; }
+  .input-row input { width: 100%; padding: 8px 10px; border: 1px solid #e7c6d5; border-radius: 8px; font-size: 0.92rem; outline: none; }
+  .input-row input:focus { border-color: #b989a5; }
+  .input-row button { grid-column: span 2; background: #b989a5; color: #fff; border: none; padding: 10px; border-radius: 8px; font-size: 0.95rem; font-weight: 500; cursor: pointer; }
+  .input-row button:hover { background: #a0758b; }
+  .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .nav button { background: none; border: 1px solid #e7c6d5; color: #8b5e7b; font-size: 1.2rem; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; }
+  .nav button:hover { background: #fdf3f7; }
+  .nav .title { font-size: 1.1rem; font-weight: 600; color: #4a2c3a; }
+  .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.72rem; font-weight: 600; color: #8b5e7b; margin-bottom: 6px; }
+  .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .cell {
+    aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-radius: 8px; font-size: 0.82rem; font-weight: 500; background: #fafafa; color: #333;
+    position: relative; padding: 2px; text-align: center; overflow: hidden; line-height: 1.2;
+  }
+  .cell.empty { background: transparent; }
+  .cell.today { box-shadow: inset 0 0 0 2px #b989a5; font-weight: 700; }
+  .cell.holiday { background: #ffebee; color: #c62828; }
+  .cell.menstrual { background: #fce4ec; color: #c2185b; }
+  .cell.ovulation { background: #e8f5e9; color: #2e7d32; box-shadow: inset 0 0 0 2px #a5d6a7; }
+  .cell.fertile { background: #f1f8e9; color: #33691e; }
+  .cell .tag { font-size: 0.58rem; font-weight: 600; display: block; margin-top: 1px; line-height: 1.1; }
+  .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 16px; font-size: 0.72rem; color: #666; }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+  .legend i { width: 13px; height: 13px; border-radius: 50%; display: inline-block; }
+  .legend .m { background: #fce4ec; border: 1px solid #f8bbd0; }
+  .legend .o { background: #e8f5e9; border: 1px solid #a5d6a7; }
+  .legend .f { background: #f1f8e9; border: 1px solid #c5e1a5; }
+  .legend .h { background: #ffebee; border: 1px solid #ef9a9a; }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>🌸 週期預測與澳門假期月曆</h1>
+
+  <div class="input-row">
+    <div>
+      <label>上次月經第一天</label>
+      <input type="date" id="lastPeriod">
+    </div>
+    <div>
+      <label>週期長度（天）</label>
+      <input type="number" id="cycleLen" value="28" min="20" max="45">
+    </div>
+    <button id="calcBtn">預測並更新</button>
+  </div>
+
+  <div class="nav">
+    <button id="prevBtn">‹</button>
+    <span class="title" id="monthTitle"></span>
+    <button id="nextBtn">›</button>
+  </div>
+
+  <div class="weekdays">
+    <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <div class="legend">
+    <span><i class="m"></i> 月經期</span>
+    <span><i class="o"></i> 排卵日</span>
+    <span><i class="f"></i> 易孕期</span>
+    <span><i class="h"></i> 公眾假期</span>
+  </div>
+</div>
+
+<script>
+// ===== 澳門公眾假期（2026-2027）=====
+const HOLIDAYS = {
+  // 2026
+  '2026-01-01': '元旦',
+  '2026-02-17': '農曆正月初一',
+  '2026-02-18': '農曆正月初二',
+  '2026-02-19': '農曆正月初三',
+  '2026-04-03': '耶穌受難日',
+  '2026-04-04': '復活節前日',
+  '2026-04-05': '清明節',
+  '2026-05-01': '勞動節',
+  '2026-05-24': '佛誕節',
+  '2026-06-19': '端午節',
+  '2026-09-26': '中秋節翌日',
+  '2026-10-01': '中華人民共和國國慶日',
+  '2026-10-02': '國慶日翌日',
+  '2026-10-18': '重陽節',
+  '2026-11-02': '追思節',
+  '2026-12-08': '聖母無原罪瞻禮',
+  '2026-12-20': '澳門特區成立紀念日',
+  '2026-12-22': '冬至',
+  '2026-12-24': '聖誕節前日',
+  '2026-12-25': '聖誕節',
+  // 2027
+  '2027-01-01': '元旦',
+  '2027-02-06': '農曆正月初一',
+  '2027-02-07': '農曆正月初二',
+  '2027-02-08': '農曆正月初三',
+  '2027-03-26': '耶穌受難日',
+  '2027-03-27': '復活節前日',
+  '2027-04-05': '清明節',
+  '2027-05-01': '勞動節',
+  '2027-05-13': '佛誕節',
+  '2027-06-09': '端午節',
+  '2027-09-16': '中秋節翌日',
+  '2027-10-01': '中華人民共和國國慶日',
+  '2027-10-02': '國慶日翌日',
+  '2027-10-08': '重陽節',
+  '2027-11-02': '追思節',
+  '2027-12-08': '聖母無原罪瞻禮',
+  '2027-12-20': '澳門特區成立紀念日',
+  '2027-12-22': '冬至',
+  '2027-12-24': '聖誕節前日',
+  '2027-12-25': '聖誕節'
+};
+
+// ===== 狀態 =====
+const today = new Date();
+let viewYear = today.getFullYear();
+let viewMonth = today.getMonth();
+let lastPeriod = new Date(today.toISOString().split('T')[0]);
+let cycleLen = 28;
+
+// ===== DOM =====
+const gridEl = document.getElementById('grid');
+const titleEl = document.getElementById('monthTitle');
+const lastPeriodInput = document.getElementById('lastPeriod');
+const cycleInput = document.getElementById('cycleLen');
+const calcBtn = document.getElementById('calcBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+lastPeriodInput.value = today.toISOString().split('T')[0];
+
+// ===== 工具 =====
+function pad(n) { return n.toString().padStart(2, '0'); }
+function dateKey(y, m, d) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
+function sameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+// 判斷是否為月經期（每月經週期前 periodLen 天，預設 5 天）
+function isMenstrual(date) {
+  const diff = Math.floor((date - lastPeriod) / 86400000);
+  if (diff < 0) return false;
+  const dayInCycle = diff % cycleLen;
+  return dayInCycle >= 0 && dayInCycle < 5;
+}
+
+// 排卵日：週期第 (cycleLen - 14) 天
+function isOvulation(date) {
+  const diff = Math.floor((date - lastPeriod) / 86400000);
+  if (diff < 0) return false;
+  const dayInCycle = diff % cycleLen;
+  return dayInCycle === (cycleLen - 14);
+}
+
+// 易孕期：排卵日前 5 天至後 1 天
+function isFertile(date) {
+  const diff = Math.floor((date - lastPeriod) / 86400000);
+  if (diff < 0) return false;
+  const dayInCycle = diff % cycleLen;
+  const ovu = cycleLen - 14;
+  const start = Math.max(0, ovu - 5);
+  const end = Math.min(cycleLen - 1, ovu + 1);
+  return dayInCycle >= start && dayInCycle <= end;
+}
+
+// ===== 渲染 =====
+function render() {
+  const monthNames = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  titleEl.textContent = `${viewYear}年 ${monthNames[viewMonth]}`;
+  gridEl.innerHTML = '';
+
+  const firstDay = new Date(viewYear, viewMonth, 1);
+  const lastDay = new Date(viewYear, viewMonth + 1, 0);
+  const daysInMonth = lastDay.getDate();
+  const startWeekday = firstDay.getDay();
+
+  for (let i = 0; i < startWeekday; i++) {
+    const e = document.createElement('div');
+    e.className = 'cell empty';
+    gridEl.appendChild(e);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const dateObj = new Date(viewYear, viewMonth, d);
+    const key = dateKey(viewYear, viewMonth, d);
+
+    // 假期文字
+    const holidayName = HOLIDAYS[key];
+
+    // 各狀態判斷
+    const men = isMenstrual(dateObj);
+    const ovu = isOvulation(dateObj);
+    const fer = isFertile(dateObj);
+
+    // 樣式優先順序：假期底色 > 排卵 > 月經 > 易孕
+    // 但我們讓排卵/月經的底色也能顯現，用特定 class 疊加
+    if (holidayName) cell.classList.add('holiday');
+    if (men) cell.classList.add('menstrual');
+    if (ovu) cell.classList.add('ovulation');
+    else if (fer) cell.classList.add('fertile');
+
+    if (sameDay(dateObj, today)) cell.classList.add('today');
+
+    // 內容：日期數字
+    const numSpan = document.createElement('span');
+    numSpan.textContent = d;
+    cell.appendChild(numSpan);
+
+    // 文字標籤：優先顯示假期名，其次排卵日
+    if (holidayName) {
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.textContent = holidayName;
+      cell.appendChild(tag);
+    } else if (ovu) {
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.textContent = '排卵日';
+      cell.appendChild(tag);
+    } else if (men) {
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.textContent = '月經';
+      cell.appendChild(tag);
+    } else if (fer) {
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.textContent = '易孕';
+      cell.appendChild(tag);
+    }
+
+    gridEl.appendChild(cell);
+  }
+}
+
+// ===== 事件 =====
+prevBtn.onclick = () => {
+  viewMonth--;
+  if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+  render();
+};
+
+nextBtn.onclick = () => {
+  viewMonth++;
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  render();
+};
+
+calcBtn.onclick = () => {
+  const v = lastPeriodInput.value;
+  if (!v) { alert('請選擇上次月經第一天'); return; }
+  lastPeriod = new Date(v);
+  const c = parseInt(cycleInput.value);
+  cycleLen = (c >= 20 && c <= 45) ? c : 28;
+  cycleInput.value = cycleLen;
+  viewYear = lastPeriod.getFullYear();
+  viewMonth = lastPeriod.getMonth();
+  render();
+};
+
+// 初始化
+render();
+</script>
+</body>
+</html>
