@@ -662,4 +662,27 @@ calcBtn.onclick = () => {
   const v = lastPeriodInput.value;
   if (!v) { alert('請選擇上次月經第一天'); return; }
   lastPeriod = new Date(v);
- 
+  const c = parseInt(cycleInput.value);
+  cycleLen = (c >= 20 && c <= 45) ? c : DEFAULT_CYCLE_LEN;
+  cycleInput.value = cycleLen;
+  viewYear = lastPeriod.getFullYear();
+  viewMonth = lastPeriod.getMonth();
+  if (yearView.classList.contains('active')) {
+    yearStartYear = viewYear;
+    yearStartMonth = viewMonth;
+    renderYear();
+  } else {
+    renderMonth();
+  }
+};
+
+// ===== 初始化 =====
+viewYear = lastPeriod.getFullYear();
+viewMonth = lastPeriod.getMonth();
+yearStartYear = viewYear;
+yearStartMonth = viewMonth;
+yearStartInput.value = `${yearStartYear}-${pad(yearStartMonth + 1)}`;
+renderMonth();
+</script>
+</body>
+</html>
