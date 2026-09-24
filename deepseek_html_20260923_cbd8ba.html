@@ -647,4 +647,42 @@ function bindSwipe(el, onLeft, onRight) {
     if (!mouseDown) return;
     mouseDown = false;
     const dx = e.clientX - mouseStartX;
-    if (Math.abs(dx) >
+    if (Math.abs(dx) > 80) {
+      if (dx < 0) onLeft();
+      else onRight();
+    }
+  });
+}
+
+bindSwipe(swipeArea, () => nextBtn.click(), () => prevBtn.click());
+bindSwipe(yearSwipeArea, () => nextYearBtn.click(), () => prevYearBtn.click());
+
+// ===== 計算按鈕 =====
+calcBtn.onclick = () => {
+  const v = lastPeriodInput.value;
+  if (!v) { alert('請選擇上次月經第一天'); return; }
+  lastPeriod = new Date(v);
+  const c = parseInt(cycleInput.value);
+  cycleLen = (c >= 20 && c <= 45) ? c : DEFAULT_CYCLE_LEN;
+  cycleInput.value = cycleLen;
+  viewYear = lastPeriod.getFullYear();
+  viewMonth = lastPeriod.getMonth();
+  if (yearView.classList.contains('active')) {
+    yearStartYear = viewYear;
+    yearStartMonth = viewMonth;
+    renderYear();
+  } else {
+    renderMonth();
+  }
+};
+
+// ===== 初始化 =====
+viewYear = lastPeriod.getFullYear();
+viewMonth = lastPeriod.getMonth();
+yearStartYear = viewYear;
+yearStartMonth = viewMonth;
+yearStartInput.value = `${yearStartYear}-${pad(yearStartMonth + 1)}`;
+renderMonth();
+</script>
+</body>
+</html>
