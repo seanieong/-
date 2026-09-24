@@ -577,8 +577,9 @@ function switchToYear() {
   tabMonth.classList.remove('active');
   monthView.classList.add('hidden');
   yearView.classList.add('active');
+  // 預設從 1 月開始
   yearStartYear = viewYear;
-  yearStartMonth = viewMonth;
+  yearStartMonth = 0;
   renderYear();
 }
 tabMonth.onclick = switchToMonth;
@@ -669,7 +670,7 @@ calcBtn.onclick = () => {
   viewMonth = lastPeriod.getMonth();
   if (yearView.classList.contains('active')) {
     yearStartYear = viewYear;
-    yearStartMonth = viewMonth;
+    yearStartMonth = 0;
     renderYear();
   } else {
     renderMonth();
@@ -680,7 +681,7 @@ calcBtn.onclick = () => {
 viewYear = lastPeriod.getFullYear();
 viewMonth = lastPeriod.getMonth();
 yearStartYear = viewYear;
-yearStartMonth = viewMonth;
+yearStartMonth = 0;
 yearStartInput.value = `${yearStartYear}-${pad(yearStartMonth + 1)}`;
 renderMonth();
 </script>
