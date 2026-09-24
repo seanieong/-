@@ -19,7 +19,6 @@
   .input-row button { grid-column: span 2; background: #b989a5; color: #fff; border: none; padding: 8px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; }
   .input-row button:hover { background: #a0758b; }
 
-  /* ===== 檢視切換 ===== */
   .view-tabs { display: flex; justify-content: center; gap: 6px; margin-bottom: 9px; }
   .view-tabs button {
     background: #fdf3f7; color: #8b5e7b; border: 1px solid #e7c6d5;
@@ -27,7 +26,6 @@
   }
   .view-tabs button.active { background: #b989a5; color: #fff; border-color: #b989a5; }
 
-  /* ===== 月曆 ===== */
   .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
   .nav button { background: none; border: 1px solid #e7c6d5; color: #8b5e7b; font-size: 1rem; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
   .nav button:hover { background: #fdf3f7; }
@@ -67,13 +65,11 @@
   .tag-ivf       { background: #ffcc80; color: #bf360c; }
   .tag-menstrual { background: #f8bbd0; color: #880e4f; }
 
-  /* ===== 年曆 ===== */
   .year-view { display: none; }
   .year-view.active { display: block; }
   .month-view { display: block; }
   .month-view.hidden { display: none; }
 
-  /* 起始月份選擇器 */
   .year-start-picker {
     display: flex; align-items: center; justify-content: center; gap: 6px;
     margin-bottom: 8px; font-size: 0.72rem; color: #8b5e7b; flex-wrap: wrap;
@@ -91,11 +87,8 @@
   .year-start-picker button:hover { background: #a0758b; }
 
   .year-swipe-area { overflow: hidden; touch-action: pan-y; user-select: none; }
-
-  /* 桌面：一行三個月 */
   .year-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 
-  /* 手機：一行兩個月，盡量縮小 */
   @media (max-width: 700px) {
     .app { padding: 6px 3px 10px; }
     .year-grid { grid-template-columns: repeat(2, 1fr); gap: 3px; }
@@ -112,7 +105,6 @@
   .mini-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.48rem; color: #a08090; font-weight: 600; margin-bottom: 1px; }
   .mini-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
 
-  /* 年曆日期格：flex 平均分配多色塊 */
   .mini-day {
     aspect-ratio: 1; display: flex; align-items: stretch; justify-content: stretch;
     font-size: 0.5rem; border-radius: 3px; background: #fff; overflow: hidden;
@@ -140,7 +132,6 @@
   .legend .ivf { background: #ffcc80; }
   .legend .h   { background: #a5d6a7; }
 
-  /* ===== Modal ===== */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.35);
     display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px;
@@ -192,7 +183,6 @@
     <button id="tabYear">🗓️ 年曆</button>
   </div>
 
-  <!-- ===== 月曆檢視 ===== -->
   <div class="month-view" id="monthView">
     <div class="nav">
       <button id="prevBtn">‹</button>
@@ -209,7 +199,6 @@
     <p class="hint">💡 左右滑動切換月份，點擊日期查看完整文字</p>
   </div>
 
-  <!-- ===== 年曆檢視 ===== -->
   <div class="year-view" id="yearView">
     <div class="nav">
       <button id="prevYearBtn">‹</button>
@@ -235,7 +224,6 @@
   </div>
 </div>
 
-<!-- Modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="m-date" id="modalDate"></div>
@@ -245,8 +233,9 @@
 </div>
 
 <script>
-// ===== 澳門公眾假期（2026-2027）=====
+// ===== 澳門公眾假期（2026-2027，含補假日）=====
 const HOLIDAYS = {
+  // ===== 2026 年 =====
   '2026-01-01': '元旦',
   '2026-02-17': '農曆正月初一',
   '2026-02-18': '農曆正月初二',
@@ -254,39 +243,52 @@ const HOLIDAYS = {
   '2026-04-03': '耶穌受難日',
   '2026-04-04': '復活節前日',
   '2026-04-05': '清明節',
+  '2026-04-06': '復活節前日的補假',
+  '2026-04-07': '清明節的補假',
   '2026-05-01': '勞動節',
   '2026-05-24': '佛誕節',
+  '2026-05-25': '佛誕節的補假',
   '2026-06-19': '端午節',
   '2026-09-26': '中秋節翌日',
+  '2026-09-28': '中秋節翌日的補假',
   '2026-10-01': '中華人民共和國國慶日',
-  '2026-10-02': '國慶日翌日',
+  '2026-10-02': '中華人民共和國國慶日翌日',
   '2026-10-18': '重陽節',
+  '2026-10-19': '重陽節的補假',
   '2026-11-02': '追思節',
   '2026-12-08': '聖母無原罪瞻禮',
-  '2026-12-20': '澳門特區成立紀念日',
+  '2026-12-20': '澳門特別行政區成立紀念日',
+  '2026-12-21': '澳門特別行政區成立紀念日的補假',
   '2026-12-22': '冬至',
   '2026-12-24': '聖誕節前日',
   '2026-12-25': '聖誕節',
+  // ===== 2027 年 =====
   '2027-01-01': '元旦',
   '2027-02-06': '農曆正月初一',
   '2027-02-07': '農曆正月初二',
   '2027-02-08': '農曆正月初三',
+  '2027-02-09': '農曆正月初一的補假',
+  '2027-02-10': '農曆正月初二的補假',
   '2027-03-26': '耶穌受難日',
   '2027-03-27': '復活節前日',
+  '2027-03-29': '復活節前日的補假',
   '2027-04-05': '清明節',
   '2027-05-01': '勞動節',
+  '2027-05-03': '勞動節的補假',
   '2027-05-13': '佛誕節',
   '2027-06-09': '端午節',
   '2027-09-16': '中秋節翌日',
   '2027-10-01': '中華人民共和國國慶日',
-  '2027-10-02': '國慶日翌日',
+  '2027-10-02': '中華人民共和國國慶日翌日',
+  '2027-10-04': '國慶日翌日的補假',
   '2027-10-08': '重陽節',
   '2027-11-02': '追思節',
   '2027-12-08': '聖母無原罪瞻禮',
-  '2027-12-20': '澳門特區成立紀念日',
+  '2027-12-20': '澳門特別行政區成立紀念日',
   '2027-12-22': '冬至',
   '2027-12-24': '聖誕節前日',
-  '2027-12-25': '聖誕節'
+  '2027-12-25': '聖誕節',
+  '2027-12-27': '聖誕節的補假'
 };
 
 // ===== 預設值 =====
@@ -299,7 +301,7 @@ const IVF_END = 22;
 // ===== 狀態 =====
 const today = new Date();
 let viewYear, viewMonth;
-let yearStartYear, yearStartMonth;   // 年曆起始月份
+let yearStartYear, yearStartMonth;
 let lastPeriod = new Date(DEFAULT_LAST_PERIOD);
 let cycleLen = DEFAULT_CYCLE_LEN;
 
@@ -575,7 +577,6 @@ function switchToYear() {
   tabMonth.classList.remove('active');
   monthView.classList.add('hidden');
   yearView.classList.add('active');
-  // 從當前顯示月份開始
   yearStartYear = viewYear;
   yearStartMonth = viewMonth;
   renderYear();
@@ -583,7 +584,6 @@ function switchToYear() {
 tabMonth.onclick = switchToMonth;
 tabYear.onclick = switchToYear;
 
-// ===== 年曆起始月份套用 =====
 yearStartBtn.onclick = () => {
   const v = yearStartInput.value;
   if (!v) { alert('請選擇起始月份'); return; }
@@ -605,7 +605,7 @@ nextBtn.onclick = () => {
   renderMonth();
 };
 
-// ===== 年曆事件（每次前進 / 後退 12 個月）=====
+// ===== 年曆事件 =====
 prevYearBtn.onclick = () => {
   yearStartMonth -= 12;
   while (yearStartMonth < 0) { yearStartMonth += 12; yearStartYear--; }
@@ -617,7 +617,7 @@ nextYearBtn.onclick = () => {
   renderYear();
 };
 
-// ===== 通用滑動綁定 =====
+// ===== 滑動綁定 =====
 function bindSwipe(el, onLeft, onRight) {
   let startX = 0, startY = 0, moved = false;
   el.addEventListener('touchstart', (e) => {
@@ -647,42 +647,4 @@ function bindSwipe(el, onLeft, onRight) {
     if (!mouseDown) return;
     mouseDown = false;
     const dx = e.clientX - mouseStartX;
-    if (Math.abs(dx) > 80) {
-      if (dx < 0) onLeft();
-      else onRight();
-    }
-  });
-}
-
-bindSwipe(swipeArea, () => nextBtn.click(), () => prevBtn.click());
-bindSwipe(yearSwipeArea, () => nextYearBtn.click(), () => prevYearBtn.click());
-
-// ===== 計算按鈕 =====
-calcBtn.onclick = () => {
-  const v = lastPeriodInput.value;
-  if (!v) { alert('請選擇上次月經第一天'); return; }
-  lastPeriod = new Date(v);
-  const c = parseInt(cycleInput.value);
-  cycleLen = (c >= 20 && c <= 45) ? c : DEFAULT_CYCLE_LEN;
-  cycleInput.value = cycleLen;
-  viewYear = lastPeriod.getFullYear();
-  viewMonth = lastPeriod.getMonth();
-  if (yearView.classList.contains('active')) {
-    yearStartYear = viewYear;
-    yearStartMonth = viewMonth;
-    renderYear();
-  } else {
-    renderMonth();
-  }
-};
-
-// ===== 初始化 =====
-viewYear = lastPeriod.getFullYear();
-viewMonth = lastPeriod.getMonth();
-yearStartYear = viewYear;
-yearStartMonth = viewMonth;
-yearStartInput.value = `${yearStartYear}-${pad(yearStartMonth + 1)}`;
-renderMonth();
-</script>
-</body>
-</html>
+    if (Math.abs(dx) >
