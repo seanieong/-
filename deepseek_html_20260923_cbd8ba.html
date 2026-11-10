@@ -8,8 +8,18 @@
   * { box-sizing: border-box; font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
   html, body { margin: 0; padding: 0; }
   body { background: #f9f5f7; display: flex; flex-direction: column; align-items: stretch; }
-  .app { width: 100%; background: #fff; padding: 8px 6px 14px; }
-  h1 { font-size: 1.05rem; color: #4a2c3a; text-align: center; margin: 0 0 8px; }
+  .app { width: 100%; background: #fff; padding: 8px 6px 14px; position: relative; }
+
+  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .top-bar h1 { font-size: 1rem; color: #4a2c3a; margin: 0; flex: 1; text-align: center; }
+  .settings-btn {
+    background: #fdf3f7; border: 1px solid #e7c6d5; color: #8b5e7b;
+    width: 34px; height: 34px; border-radius: 50%; font-size: 1rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .settings-btn:hover { background: #f7e6ef; }
+  .top-bar .spacer { width: 34px; flex-shrink: 0; }
 
   .input-row { background: #fdf3f7; border-radius: 12px; padding: 9px; margin-bottom: 9px; display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
   .input-row label { font-size: 0.7rem; color: #8b5e7b; font-weight: 500; display: block; margin-bottom: 2px; }
@@ -22,34 +32,53 @@
   .view-tabs button { background: #fdf3f7; color: #8b5e7b; border: 1px solid #e7c6d5; padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
   .view-tabs button.active { background: #b989a5; color: #fff; border-color: #b989a5; }
 
-  /* ===== 事件配置區 ===== */
-  .config-section { background: #f7f3fa; border-radius: 12px; padding: 10px; margin-bottom: 10px; }
-  .config-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .config-header h2 { font-size: 0.85rem; color: #4a2c3a; margin: 0; }
-  .config-header button { background: #b989a5; color: #fff; border: none; padding: 5px 12px; border-radius: 16px; font-size: 0.72rem; font-weight: 600; cursor: pointer; }
-  .config-header button:hover { background: #a0758b; }
+  /* ===== 設定面板 ===== */
+  .settings-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: none; align-items: center; justify-content: center; z-index: 300; padding: 16px;
+  }
+  .settings-overlay.show { display: flex; }
+  .settings-panel {
+    background: #fff; border-radius: 16px; padding: 18px 20px;
+    max-width: 420px; width: 100%; max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  }
+  .settings-panel h2 { font-size: 1rem; color: #4a2c3a; margin: 0 0 12px; text-align: center; }
+  .settings-section-title { font-size: 0.8rem; font-weight: 700; color: #8b5e7b; margin: 12px 0 6px; display: flex; justify-content: space-between; align-items: center; }
+  .settings-section-title button {
+    background: #b989a5; color: #fff; border: none; padding: 4px 10px;
+    border-radius: 12px; font-size: 0.7rem; font-weight: 600; cursor: pointer;
+  }
+  .settings-section-title button:hover { background: #a0758b; }
 
   .event-list { display: flex; flex-direction: column; gap: 6px; }
   .event-item {
     display: flex; align-items: center; gap: 8px;
-    background: #fff; border-radius: 8px; padding: 6px 8px;
-    border: 1px solid #e7d6e0; font-size: 0.72rem;
+    background: #fdf9fb; border-radius: 8px; padding: 6px 8px;
+    border: 1px solid #e7d6e0; font-size: 0.74rem;
   }
   .event-color-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
   .event-name { flex: 1; font-weight: 600; color: #4a2c3a; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .event-range { color: #8b5e7b; font-size: 0.68rem; white-space: nowrap; }
-  .event-actions { display: flex; gap: 4px; }
+  .event-actions { display: flex; gap: 2px; }
   .event-actions button {
     background: none; border: none; cursor: pointer; font-size: 0.75rem;
     padding: 3px 5px; border-radius: 4px; color: #8b5e7b;
   }
-  .event-actions button:hover { background: #fdf3f7; }
+  .event-actions button:hover { background: #f0e6ec; }
   .event-actions .del:hover { background: #ffebee; color: #c62828; }
 
-  /* 編輯表單 modal */
+  .settings-close {
+    margin-top: 16px; width: 100%; background: #f0e6ec; color: #6a4a5a;
+    border: none; padding: 9px; border-radius: 8px; font-size: 0.85rem;
+    font-weight: 600; cursor: pointer;
+  }
+  .settings-close:hover { background: #e7d6e0; }
+
+  /* ===== 編輯 Modal ===== */
   .edit-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-    display: none; align-items: center; justify-content: center; z-index: 200; padding: 16px;
+    display: none; align-items: center; justify-content: center; z-index: 400; padding: 16px;
   }
   .edit-overlay.show { display: flex; }
   .edit-modal {
@@ -99,9 +128,17 @@
   .cell.empty { background: transparent; cursor: default; }
   .cell.empty:hover { transform: none; }
   .cell.today { box-shadow: inset 0 0 0 2px #b989a5; font-weight: 700; }
+
+  /* 底色優先級：月經 > 假期 > 一般；自訂事件用標籤與邊框表達，不覆蓋底色 */
   .cell.menstrual { background: #fce4ec; color: #c2185b; }
-  .cell.multi { box-shadow: inset 0 0 0 2px #66bb6a; }
-  .cell.today.multi { box-shadow: inset 0 0 0 2px #b989a5, inset 0 0 0 4px #66bb6a; }
+  .cell.holiday   { background: #e8f5e9; color: #2e7d32; }
+  .cell.menstrual.holiday { background: #fce4ec; color: #c2185b; box-shadow: inset 0 0 0 2px #66bb6a; }
+  .cell.has-event { box-shadow: inset 0 0 0 2px #b989a5; }
+  .cell.menstrual.has-event { box-shadow: inset 0 0 0 2px #b989a5, inset 0 0 0 4px #f8bbd0; }
+  .cell.holiday.has-event   { box-shadow: inset 0 0 0 2px #b989a5, inset 0 0 0 4px #a5d6a7; }
+  .cell.menstrual.holiday.has-event { box-shadow: inset 0 0 0 2px #b989a5, inset 0 0 0 4px #66bb6a; }
+  .cell.today.has-event { box-shadow: inset 0 0 0 2px #4a2c3a, inset 0 0 0 4px #b989a5; }
+
   .cell .num { font-size: 0.72rem; font-weight: 700; }
   .cell .tags { display: flex; flex-direction: column; gap: 1px; margin-top: 1px; width: 100%; }
   .cell .tag {
@@ -109,6 +146,8 @@
     padding: 1px 2px; border-radius: 3px; line-height: 1.05;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+  .tag-holiday   { background: #a5d6a7; color: #1b5e20; }
+  .tag-menstrual { background: #f8bbd0; color: #880e4f; }
 
   /* ===== 年曆 ===== */
   .year-view { display: none; }
@@ -140,6 +179,8 @@
   .mini-day.empty { background: transparent; border: none; }
   .mini-day .seg { flex: 1; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.48rem; min-width: 0; overflow: hidden; }
   .seg.plain { background: #fff; color: #666; }
+  .seg.holiday { background: #e8f5e9; color: #2e7d32; }
+  .seg.menstrual { background: #fce4ec; color: #c2185b; }
   .mini-day.today .seg { box-shadow: inset 0 0 0 1.5px #b989a5; }
   .mini-day.today { border-color: #b989a5; }
 
@@ -162,7 +203,11 @@
 </head>
 <body>
 <div class="app">
-  <h1>🌸 週期預測與澳門假期月曆</h1>
+  <div class="top-bar">
+    <div class="spacer"></div>
+    <h1>🌸 週期預測與澳門假期月曆</h1>
+    <button class="settings-btn" id="settingsBtn" title="設定">⚙️</button>
+  </div>
 
   <div class="input-row">
     <div>
@@ -174,15 +219,6 @@
       <input type="number" id="cycleLen" value="27" min="20" max="45">
     </div>
     <button id="calcBtn">預測並更新</button>
-  </div>
-
-  <!-- 事件配置區 -->
-  <div class="config-section">
-    <div class="config-header">
-      <h2>🎨 自訂事件配置</h2>
-      <button id="addEventBtn">＋ 新增</button>
-    </div>
-    <div class="event-list" id="eventList"></div>
   </div>
 
   <div class="view-tabs">
@@ -219,18 +255,22 @@
     <div class="year-swipe-area" id="yearSwipeArea">
       <div class="year-grid" id="yearGrid"></div>
     </div>
-    <p class="hint">💡 左右滑動切換區間，點擊日期查看完整資訊（最多 3 色平均分割）</p>
+    <p class="hint">💡 左右滑動切換區間，點擊日期查看完整資訊</p>
   </div>
 
   <div class="legend" id="legend"></div>
 </div>
 
-<!-- 詳情 Modal -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <div class="m-date" id="modalDate"></div>
-    <div class="m-list" id="modalList"></div>
-    <button class="m-close" id="modalClose">關閉</button>
+<!-- 設定面板 -->
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-panel">
+    <h2>⚙️ 設定</h2>
+    <div class="settings-section-title">
+      <span>🎨 自訂事件</span>
+      <button id="addEventBtn">＋ 新增</button>
+    </div>
+    <div class="event-list" id="eventList"></div>
+    <button class="settings-close" id="settingsClose">關閉</button>
   </div>
 </div>
 
@@ -258,6 +298,15 @@
       <button class="cancel" id="editCancel">取消</button>
       <button class="save" id="editSave">儲存</button>
     </div>
+  </div>
+</div>
+
+<!-- 詳情 Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="m-date" id="modalDate"></div>
+    <div class="m-list" id="modalList"></div>
+    <button class="m-close" id="modalClose">關閉</button>
   </div>
 </div>
 
@@ -323,14 +372,13 @@ const DEFAULT_LAST_PERIOD = '2026-10-11';
 const DEFAULT_CYCLE_LEN = 27;
 const PERIOD_LEN = 5;
 
-// ===== 預設事件配置 =====
 const DEFAULT_EVENTS = [
   { id: 'ovulation', name: '排卵日', start: 13, end: 13, color: '#6a1b9a' },
   { id: 'ivf',       name: '植入日', start: 18, end: 22, color: '#e65100' },
   { id: 'egg',       name: '取卵日', start: 12, end: 16, color: '#4fc3f7' }
 ];
 
-// ===== 本地時間解析，避免時區偏移 =====
+// ===== 本地時間解析 =====
 function parseLocalDate(str) {
   if (!str) return null;
   const [y, m, d] = str.split('-').map(Number);
@@ -354,7 +402,7 @@ function daysBetween(a, b) {
 }
 
 // ===== 儲存設定 =====
-const STORAGE_KEY = 'macau_cycle_predictor_v2';
+const STORAGE_KEY = 'macau_cycle_predictor_v3';
 
 function loadSettings() {
   let data = null;
@@ -422,9 +470,12 @@ const modalList = document.getElementById('modalList');
 const modalClose = document.getElementById('modalClose');
 const legendEl = document.getElementById('legend');
 
-// 事件配置 UI
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsOverlay = document.getElementById('settingsOverlay');
+const settingsClose = document.getElementById('settingsClose');
 const eventListEl = document.getElementById('eventList');
 const addEventBtn = document.getElementById('addEventBtn');
+
 const editOverlay = document.getElementById('editOverlay');
 const editTitle = document.getElementById('editTitle');
 const editName = document.getElementById('editName');
@@ -434,7 +485,7 @@ const editColor = document.getElementById('editColor');
 const editCancel = document.getElementById('editCancel');
 const editSave = document.getElementById('editSave');
 
-let editingId = null; // null = 新增
+let editingId = null;
 
 // ===== 顏色工具 =====
 function hexToRgb(hex) {
@@ -447,31 +498,24 @@ function hexToRgb(hex) {
 }
 function lighten(hex, amount) {
   const { r, g, b } = hexToRgb(hex);
-  const lr = Math.round(r + (255 - r) * amount);
-  const lg = Math.round(g + (255 - g) * amount);
-  const lb = Math.round(b + (255 - b) * amount);
-  return `rgb(${lr}, ${lg}, ${lb})`;
+  return `rgb(${Math.round(r + (255 - r) * amount)}, ${Math.round(g + (255 - g) * amount)}, ${Math.round(b + (255 - b) * amount)})`;
 }
 function darken(hex, amount) {
   const { r, g, b } = hexToRgb(hex);
-  const dr = Math.round(r * (1 - amount));
-  const dg = Math.round(g * (1 - amount));
-  const db = Math.round(b * (1 - amount));
-  return `rgb(${dr}, ${dg}, ${db})`;
+  return `rgb(${Math.round(r * (1 - amount))}, ${Math.round(g * (1 - amount))}, ${Math.round(b * (1 - amount))})`;
 }
 
 // 動態注入事件樣式
 function injectEventStyles() {
   let css = '';
   events.forEach(ev => {
-    const bg = lighten(ev.color, 0.85);
-    const bgSeg = lighten(ev.color, 0.75);
+    const tagBg = lighten(ev.color, 0.55);
     const fg = darken(ev.color, 0.35);
+    const segBg = lighten(ev.color, 0.75);
     css += `
-      .cell.ev-${ev.id} { background: ${bg}; color: ${fg}; }
-      .tag-ev-${ev.id} { background: ${lighten(ev.color, 0.55)}; color: ${fg}; }
-      .seg-ev-${ev.id} { background: ${bgSeg}; color: ${fg}; }
-      .m-item.ev-${ev.id} { background: ${bg}; color: ${fg}; }
+      .tag-ev-${ev.id} { background: ${tagBg}; color: ${fg}; }
+      .seg-ev-${ev.id} { background: ${segBg}; color: ${fg}; }
+      .m-item.ev-${ev.id} { background: ${lighten(ev.color, 0.85)}; color: ${fg}; }
     `;
   });
   let styleTag = document.getElementById('dynamicEventStyles');
@@ -483,13 +527,13 @@ function injectEventStyles() {
   styleTag.textContent = css;
 }
 
-// ===== 事件配置渲染 =====
+// ===== 事件配置 UI =====
 function renderEventList() {
   eventListEl.innerHTML = '';
   if (events.length === 0) {
     const empty = document.createElement('div');
     empty.style.cssText = 'text-align:center;font-size:0.7rem;color:#aaa;padding:8px;';
-    empty.textContent = '尚未配置任何事件，點擊右上角「＋ 新增」';
+    empty.textContent = '尚未配置任何事件';
     eventListEl.appendChild(empty);
     return;
   }
@@ -509,9 +553,7 @@ function renderEventList() {
 
     const range = document.createElement('span');
     range.className = 'event-range';
-    range.textContent = ev.start === ev.end
-      ? `第 ${ev.start} 日`
-      : `第 ${ev.start}～${ev.end} 日`;
+    range.textContent = ev.start === ev.end ? `第 ${ev.start} 日` : `第 ${ev.start}～${ev.end} 日`;
     item.appendChild(range);
 
     const actions = document.createElement('div');
@@ -546,7 +588,7 @@ function renderEventList() {
 
 function renderLegend() {
   legendEl.innerHTML = '';
-  // 月經
+
   const menSpan = document.createElement('span');
   const menDot = document.createElement('i');
   menDot.style.background = '#f8bbd0';
@@ -554,7 +596,6 @@ function renderLegend() {
   menSpan.appendChild(document.createTextNode('月經期'));
   legendEl.appendChild(menSpan);
 
-  // 動態事件
   events.forEach(ev => {
     const span = document.createElement('span');
     const dot = document.createElement('i');
@@ -564,7 +605,6 @@ function renderLegend() {
     legendEl.appendChild(span);
   });
 
-  // 假期
   const hSpan = document.createElement('span');
   const hDot = document.createElement('i');
   hDot.style.background = '#a5d6a7';
@@ -572,6 +612,16 @@ function renderLegend() {
   hSpan.appendChild(document.createTextNode('公眾假期'));
   legendEl.appendChild(hSpan);
 }
+
+// ===== 設定面板開關 =====
+settingsBtn.onclick = () => {
+  renderEventList();
+  settingsOverlay.classList.add('show');
+};
+settingsClose.onclick = () => settingsOverlay.classList.remove('show');
+settingsOverlay.onclick = (e) => {
+  if (e.target === settingsOverlay) settingsOverlay.classList.remove('show');
+};
 
 // ===== 編輯 Modal =====
 function openEditModal(id) {
@@ -621,7 +671,6 @@ editSave.onclick = () => {
       ev.color = color;
     }
   } else {
-    // 產生唯一 id
     const id = 'ev' + Date.now() + Math.floor(Math.random() * 1000);
     events.push({ id, name, start, end, color });
   }
@@ -636,7 +685,7 @@ editSave.onclick = () => {
 
 addEventBtn.onclick = () => openEditModal(null);
 
-// ===== 判斷某日屬於哪些事件 =====
+// ===== 日期判斷 =====
 function getDayInCycle(date) {
   const diff = daysBetween(date, lastPeriod);
   if (diff < 0) return -1;
@@ -669,7 +718,7 @@ function getDayInfo(dateObj) {
   return { holidayName, men, matchedEvents, items };
 }
 
-// ===== Modal 詳情 =====
+// ===== 詳情 Modal =====
 function showModal(dateObj, items) {
   const y = dateObj.getFullYear();
   const m = dateObj.getMonth() + 1;
@@ -694,10 +743,11 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     modalOverlay.classList.remove('show');
     editOverlay.classList.remove('show');
+    settingsOverlay.classList.remove('show');
   }
 });
 
-// ===== 月曆渲染 =====
+// ===== 月曆渲染（重點：底色不被事件覆蓋）=====
 function renderMonth() {
   const monthNames = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
   titleEl.textContent = `${viewYear}年 ${monthNames[viewMonth]}`;
@@ -720,13 +770,17 @@ function renderMonth() {
     const dateObj = new Date(viewYear, viewMonth, d);
     const info = getDayInfo(dateObj);
 
-    if (info.men) cell.classList.add('menstrual');
-    if (info.holidayName) cell.classList.add('holiday');
-    info.matchedEvents.forEach(ev => cell.classList.add('ev-' + ev.id));
+    // 底色優先順序：月經 > 假期 > 一般（互不覆蓋，兩者同時存在時疊加邊框）
+    if (info.men && info.holidayName) {
+      cell.classList.add('menstrual', 'holiday');
+    } else if (info.men) {
+      cell.classList.add('menstrual');
+    } else if (info.holidayName) {
+      cell.classList.add('holiday');
+    }
 
-    // 多重特殊狀態（假期 + 自訂事件，或自訂事件多於 1 個）加邊框
-    const specialCount = [info.holidayName].filter(Boolean).length + info.matchedEvents.length;
-    if (specialCount >= 2) cell.classList.add('multi');
+    // 自訂事件：用 has-event 邊框呈現，不覆蓋底色
+    if (info.matchedEvents.length > 0) cell.classList.add('has-event');
     if (sameDay(dateObj, today)) cell.classList.add('today');
 
     const num = document.createElement('span');
@@ -737,6 +791,8 @@ function renderMonth() {
     if (info.items.length > 0) {
       const tags = document.createElement('div');
       tags.className = 'tags';
+
+      // 標籤順序：假期 → 自訂事件 → 月經
       if (info.holidayName) {
         const t = document.createElement('span');
         t.className = 'tag tag-holiday';
@@ -755,6 +811,7 @@ function renderMonth() {
         t.textContent = '月經';
         tags.appendChild(t);
       }
+
       cell.appendChild(tags);
       cell.onclick = () => showModal(dateObj, info.items);
     }
@@ -769,7 +826,7 @@ function buildMiniDay(dateObj, info) {
   cell.className = 'mini-day';
   if (sameDay(dateObj, today)) cell.classList.add('today');
 
-  // 依優先級：假期 > 自訂事件（依配置順序）> 月經，最多 3 個
+  // 年曆：優先級 假期 > 自訂事件 > 月經，最多 3 個色塊
   const segments = [];
   if (info.holidayName) segments.push({ cls: 'holiday', text: '假' });
   info.matchedEvents.forEach(ev => {
@@ -995,7 +1052,6 @@ function init() {
   yearStartInput.value = `${yearStartYear}-01`;
 
   injectEventStyles();
-  renderEventList();
   renderLegend();
   renderMonth();
 }
