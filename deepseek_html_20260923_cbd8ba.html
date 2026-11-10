@@ -40,7 +40,7 @@
   .settings-overlay.show { display: flex; }
   .settings-panel {
     background: #fff; border-radius: 16px; padding: 18px 20px;
-    max-width: 460px; width: 100%; max-height: 85vh; overflow-y: auto;
+    max-width: 480px; width: 100%; max-height: 85vh; overflow-y: auto;
     box-shadow: 0 15px 40px rgba(0,0,0,0.2);
   }
   .settings-panel h2 { font-size: 1rem; color: #4a2c3a; margin: 0 0 12px; text-align: center; }
@@ -61,8 +61,29 @@
     display: flex; align-items: center; gap: 8px;
     background: #fdf9fb; border-radius: 8px; padding: 6px 8px;
     border: 1px solid #e7d6e0; font-size: 0.74rem;
+    transition: opacity 0.15s;
   }
+  .event-item.disabled { opacity: 0.5; background: #f5f0f2; }
   .event-color-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
+
+  /* 開關 */
+  .toggle-switch {
+    position: relative; width: 32px; height: 18px; flex-shrink: 0;
+    cursor: pointer;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0; background: #d0c0c8;
+    border-radius: 18px; transition: background 0.2s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute; width: 14px; height: 14px;
+    left: 2px; top: 2px; background: #fff; border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle-switch input:checked + .toggle-slider { background: #b989a5; }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(14px); }
+
   .event-priority {
     display: flex; flex-direction: column; gap: 1px;
     font-size: 0.6rem; color: #8b5e7b; flex-shrink: 0;
@@ -136,15 +157,17 @@
   .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.64rem; font-weight: 600; color: #8b5e7b; margin-bottom: 3px; }
   .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
 
-  /* 格子：底色由「最高優先級」的狀態決定 */
   .cell {
     aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     border-radius: 6px; font-size: 0.72rem; font-weight: 500; background: #fafafa; color: #333;
     position: relative; padding: 3px 1px 2px; text-align: center; overflow: hidden; line-height: 1.1;
-    cursor: pointer;
+    cursor: pointer; border: 2px solid transparent;
   }
-  .cell.empty { background: transparent; cursor: default; }
-  .cell.today { outline: 2px solid #4a2c3a; outline-offset: -3px; font-weight: 700; }
+  .cell.empty { background: transparent; cursor: default; border: none; }
+  .cell.today { outline: 2px solid #4a2c3a; outline-offset: -4px; font-weight: 700; }
+
+  /* 公眾假期：綠色邊框 */
+  .cell.holiday { border-color: #43a047; }
 
   .cell .num { font-size: 0.72rem; font-weight: 700; }
   .cell .tags { display: flex; flex-direction: column; gap: 1px; margin-top: 1px; width: 100%; padding: 0 1px; }
@@ -187,10 +210,13 @@
   }
   .mini-day.empty { background: transparent; border: none; }
   .mini-day.today { box-shadow: inset 0 0 0 1.5px #b989a5; }
+  /* 年曆假期：綠色邊框 */
+  .mini-day.holiday { border-color: #43a047; border-width: 1.5px; }
 
   .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-top: 10px; font-size: 0.64rem; color: #666; }
   .legend span { display: flex; align-items: center; gap: 3px; }
   .legend i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  .legend i.border-holiday { background: transparent; border: 2px solid #43a047; }
 
   /* ===== 詳情 Modal ===== */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
@@ -271,7 +297,7 @@
     <h2>⚙️ 設定</h2>
     <div class="priority-hint">
       <strong>底色優先級：</strong>公眾假期 → 月經期 → 自訂事件（依下方順序，越上面優先級越高）。<br>
-      同一天有多個事件時，只顯示優先級最高者的底色，其他以文字標籤顯示。
+      公眾假期會額外顯示綠色邊框；自訂事件可用開關暫時停用。
     </div>
     <div class="settings-section-title">
       <span>🎨 自訂事件</span>
@@ -384,12 +410,11 @@ const DEFAULT_LAST_PERIOD = '2026-10-11';
 const DEFAULT_CYCLE_LEN = 27;
 const PERIOD_LEN = 5;
 
-// 預設事件，陣列順序即優先級（越前面優先級越高）
-// 預設優先級：取卵日 > 排卵日 > 植入日
+// 預設事件（enabled 為開關狀態）
 const DEFAULT_EVENTS = [
-  { id: 'egg',       name: '取卵日', start: 12, end: 16, color: '#4fc3f7' },
-  { id: 'ovulation', name: '排卵日', start: 13, end: 13, color: '#6a1b9a' },
-  { id: 'ivf',       name: '植入日', start: 18, end: 22, color: '#e65100' }
+  { id: 'egg',       name: '取卵日', start: 12, end: 16, color: '#4fc3f7', enabled: true },
+  { id: 'ovulation', name: '排卵日', start: 13, end: 13, color: '#6a1b9a', enabled: true },
+  { id: 'ivf',       name: '植入日', start: 18, end: 22, color: '#e65100', enabled: true }
 ];
 
 // ===== 本地時間解析 =====
@@ -434,7 +459,7 @@ function darken(hex, amount) {
 }
 
 // ===== 儲存設定 =====
-const STORAGE_KEY = 'macau_cycle_predictor_v7';
+const STORAGE_KEY = 'macau_cycle_predictor_v8';
 
 function loadSettings() {
   let data = null;
@@ -453,7 +478,7 @@ function loadSettings() {
     lastPeriod: data.lastPeriod || DEFAULT_LAST_PERIOD,
     cycleLen: (data.cycleLen >= 20 && data.cycleLen <= 45) ? data.cycleLen : DEFAULT_CYCLE_LEN,
     events: Array.isArray(data.events) && data.events.length > 0
-      ? data.events
+      ? data.events.map(ev => ({ ...ev, enabled: ev.enabled !== false }))
       : JSON.parse(JSON.stringify(DEFAULT_EVENTS))
   };
 }
@@ -474,7 +499,7 @@ today.setHours(0, 0, 0, 0);
 let viewYear, viewMonth;
 let yearStartYear, yearStartMonth;
 let lastPeriod, cycleLen;
-let events = [];   // 陣列順序即優先級
+let events = [];
 
 // ===== DOM =====
 const gridEl = document.getElementById('grid');
@@ -531,14 +556,34 @@ function renderEventList() {
   }
   events.forEach((ev, idx) => {
     const item = document.createElement('div');
-    item.className = 'event-item';
+    item.className = 'event-item' + (ev.enabled === false ? ' disabled' : '');
 
+    // 開關
+    const toggle = document.createElement('label');
+    toggle.className = 'toggle-switch';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = ev.enabled !== false;
+    checkbox.onchange = () => {
+      ev.enabled = checkbox.checked;
+      saveSettings();
+      renderEventList();
+      renderLegend();
+      refreshCurrentView();
+    };
+    const slider = document.createElement('span');
+    slider.className = 'toggle-slider';
+    toggle.appendChild(checkbox);
+    toggle.appendChild(slider);
+    item.appendChild(toggle);
+
+    // 顏色點
     const dot = document.createElement('span');
     dot.className = 'event-color-dot';
     dot.style.background = ev.color;
     item.appendChild(dot);
 
-    // 優先級上下調整按鈕
+    // 優先級調整
     const prio = document.createElement('div');
     prio.className = 'event-priority';
     const upBtn = document.createElement('button');
@@ -621,6 +666,7 @@ function renderLegend() {
   legendEl.appendChild(menSpan);
 
   events.forEach(ev => {
+    if (ev.enabled === false) return;
     const span = document.createElement('span');
     const dot = document.createElement('i');
     dot.style.background = ev.color;
@@ -631,7 +677,8 @@ function renderLegend() {
 
   const hSpan = document.createElement('span');
   const hDot = document.createElement('i');
-  hDot.style.background = HOLIDAY_COLOR;
+  hDot.style.background = lighten(HOLIDAY_COLOR, 0.7);
+  hDot.className = 'border-holiday';
   hSpan.appendChild(hDot);
   hSpan.appendChild(document.createTextNode('公眾假期'));
   legendEl.appendChild(hSpan);
@@ -696,7 +743,7 @@ editSave.onclick = () => {
     }
   } else {
     const id = 'ev' + Date.now() + Math.floor(Math.random() * 1000);
-    events.push({ id, name, start, end, color });
+    events.push({ id, name, start, end, color, enabled: true });
   }
 
   saveSettings();
@@ -721,12 +768,12 @@ function isMenstrual(date) {
 function getMatchingEvents(date) {
   const d = getDayInCycle(date);
   if (d < 1) return [];
-  // 回傳順序即優先級（events 陣列順序）
-  return events.filter(ev => d >= ev.start && d <= ev.end);
+  // 只回傳已啟用的事件，順序即優先級
+  return events.filter(ev => ev.enabled !== false && d >= ev.start && d <= ev.end);
 }
 
-// 取得某日所有狀態，並依優先級排序
-// 固定優先級：公眾假期 > 月經期 > 自訂事件（events 陣列順序）
+// 取得某日所有狀態，依優先級排序
+// 固定優先級：公眾假期 > 月經期 > 自訂事件（events 陣列順序，僅已啟用者）
 function getDayStatuses(dateObj) {
   const key = dateKey(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
   const holidayName = HOLIDAYS[key];
@@ -777,6 +824,7 @@ function showModal(dateObj, statuses) {
     div.className = 'm-item';
     div.style.background = lighten(s.color, 0.82);
     div.style.color = darken(s.color, 0.4);
+    if (s.kind === 'holiday') div.style.borderLeft = '4px solid ' + HOLIDAY_COLOR;
     div.textContent = s.label;
     modalList.appendChild(div);
   });
@@ -817,11 +865,16 @@ function renderMonth() {
     const dateObj = new Date(viewYear, viewMonth, d);
     const { statuses } = getDayStatuses(dateObj);
 
-    // 底色：取優先級最高者（statuses[0]）
+    // 底色：取優先級最高者
     if (statuses.length > 0) {
       const top = statuses[0];
       cell.style.background = lighten(top.color, 0.82);
       cell.style.color = darken(top.color, 0.42);
+    }
+
+    // 公眾假期：綠色邊框（無論底色是什麼都加上）
+    if (statuses.some(s => s.kind === 'holiday')) {
+      cell.classList.add('holiday');
     }
 
     if (sameDay(dateObj, today)) cell.classList.add('today');
@@ -831,7 +884,6 @@ function renderMonth() {
     num.textContent = d;
     cell.appendChild(num);
 
-    // 標籤：全部列出，讓使用者知道當天所有狀態
     if (statuses.length > 0) {
       const tags = document.createElement('div');
       tags.className = 'tags';
@@ -904,12 +956,18 @@ function renderYear() {
       cell.className = 'mini-day';
       if (sameDay(dateObj, today)) cell.classList.add('today');
 
-      // 年曆格子：底色取最高優先級者
+      // 年曆底色：取優先級最高者
       if (statuses.length > 0) {
         const top = statuses[0];
         cell.style.background = lighten(top.color, 0.78);
         cell.style.color = darken(top.color, 0.45);
       }
+
+      // 公眾假期：綠色邊框
+      if (statuses.some(s => s.kind === 'holiday')) {
+        cell.classList.add('holiday');
+      }
+
       cell.textContent = d;
 
       if (statuses.length > 0) {
