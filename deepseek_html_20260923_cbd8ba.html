@@ -118,36 +118,41 @@
   .swipe-area, .year-swipe-area { overflow: hidden; touch-action: pan-y; user-select: none; }
   .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.64rem; font-weight: 600; color: #8b5e7b; margin-bottom: 3px; }
   .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+
+  /* 格子本體：底色保持白，所有狀態用頂部色條呈現 */
   .cell {
     aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     border-radius: 6px; font-size: 0.72rem; font-weight: 500; background: #fafafa; color: #333;
-    position: relative; padding: 2px 1px; text-align: center; overflow: hidden; line-height: 1.1;
-    cursor: pointer; transition: transform 0.1s;
+    position: relative; padding: 0 1px 2px; text-align: center; overflow: hidden; line-height: 1.1;
+    cursor: pointer;
   }
-  .cell:hover { transform: scale(1.03); z-index: 2; }
   .cell.empty { background: transparent; cursor: default; }
-  .cell.empty:hover { transform: none; }
-  .cell.today { box-shadow: inset 0 0 0 2px #b989a5; font-weight: 700; }
+  .cell.today { font-weight: 700; }
+  .cell.today::after {
+    content: ''; position: absolute; inset: 0; border-radius: 6px;
+    box-shadow: inset 0 0 0 2px #4a2c3a; pointer-events: none;
+  }
 
-  /* 底色優先級：月經 > 假期 > 一般；自訂事件用標籤與邊框表達，不覆蓋底色 */
-  .cell.menstrual { background: #fce4ec; color: #c2185b; }
-  .cell.holiday   { background: #e8f5e9; color: #2e7d32; }
-  .cell.menstrual.holiday { background: #fce4ec; color: #c2185b; box-shadow: inset 0 0 0 2px #66bb6a; }
-  .cell.has-event { box-shadow: inset 0 0 0 2px #b989a5; }
-  .cell.menstrual.has-event { box-shadow: inset 0 0 0 2px #b989a5, inset 0 0 0 4px #f8bbd0; }
-  .cell.holiday.has-event   { box-shadow: inset 0 0 0 2px #b989a5, inset 0 0 0 4px #a5d6a7; }
-  .cell.menstrual.holiday.has-event { box-shadow: inset 0 0 0 2px #b989a5, inset 0 0 0 4px #66bb6a; }
-  .cell.today.has-event { box-shadow: inset 0 0 0 2px #4a2c3a, inset 0 0 0 4px #b989a5; }
+  /* 頂部色條容器：放在格子最上方，高度固定，多個事件平均分割 */
+  .cell .stripe {
+    width: 100%; height: 6px; display: flex; flex-shrink: 0;
+    border-radius: 6px 6px 0 0; overflow: hidden;
+  }
+  .cell .stripe .bar { flex: 1; height: 100%; }
 
-  .cell .num { font-size: 0.72rem; font-weight: 700; }
-  .cell .tags { display: flex; flex-direction: column; gap: 1px; margin-top: 1px; width: 100%; }
+  .cell .num {
+    font-size: 0.72rem; font-weight: 700;
+    margin-top: 2px;
+  }
+  .cell .tags {
+    display: flex; flex-direction: column; gap: 1px;
+    margin-top: 1px; width: 100%; padding: 0 1px;
+  }
   .cell .tag {
     font-size: 0.42rem; font-weight: 700; display: block;
     padding: 1px 2px; border-radius: 3px; line-height: 1.05;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .tag-holiday   { background: #a5d6a7; color: #1b5e20; }
-  .tag-menstrual { background: #f8bbd0; color: #880e4f; }
 
   /* ===== 年曆 ===== */
   .year-view { display: none; }
@@ -179,8 +184,6 @@
   .mini-day.empty { background: transparent; border: none; }
   .mini-day .seg { flex: 1; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.48rem; min-width: 0; overflow: hidden; }
   .seg.plain { background: #fff; color: #666; }
-  .seg.holiday { background: #e8f5e9; color: #2e7d32; }
-  .seg.menstrual { background: #fce4ec; color: #c2185b; }
   .mini-day.today .seg { box-shadow: inset 0 0 0 1.5px #b989a5; }
   .mini-day.today { border-color: #b989a5; }
 
@@ -367,6 +370,10 @@ const HOLIDAYS = {
   '2027-12-27': '聖誕節的補假'
 };
 
+// ===== 固定色 =====
+const MENSTRUAL_COLOR = '#ec407a';   // 月經
+const HOLIDAY_COLOR   = '#43a047';   // 公眾假期
+
 // ===== 預設值 =====
 const DEFAULT_LAST_PERIOD = '2026-10-11';
 const DEFAULT_CYCLE_LEN = 27;
@@ -401,8 +408,26 @@ function daysBetween(a, b) {
   return Math.round((aMid - bMid) / 86400000);
 }
 
+// ===== 顏色工具 =====
+function hexToRgb(hex) {
+  const h = hex.replace('#', '');
+  return {
+    r: parseInt(h.substring(0, 2), 16),
+    g: parseInt(h.substring(2, 4), 16),
+    b: parseInt(h.substring(4, 6), 16)
+  };
+}
+function lighten(hex, amount) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgb(${Math.round(r + (255 - r) * amount)}, ${Math.round(g + (255 - g) * amount)}, ${Math.round(b + (255 - b) * amount)})`;
+}
+function darken(hex, amount) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgb(${Math.round(r * (1 - amount))}, ${Math.round(g * (1 - amount))}, ${Math.round(b * (1 - amount))})`;
+}
+
 // ===== 儲存設定 =====
-const STORAGE_KEY = 'macau_cycle_predictor_v3';
+const STORAGE_KEY = 'macau_cycle_predictor_v6';
 
 function loadSettings() {
   let data = null;
@@ -487,46 +512,6 @@ const editSave = document.getElementById('editSave');
 
 let editingId = null;
 
-// ===== 顏色工具 =====
-function hexToRgb(hex) {
-  const h = hex.replace('#', '');
-  return {
-    r: parseInt(h.substring(0, 2), 16),
-    g: parseInt(h.substring(2, 4), 16),
-    b: parseInt(h.substring(4, 6), 16)
-  };
-}
-function lighten(hex, amount) {
-  const { r, g, b } = hexToRgb(hex);
-  return `rgb(${Math.round(r + (255 - r) * amount)}, ${Math.round(g + (255 - g) * amount)}, ${Math.round(b + (255 - b) * amount)})`;
-}
-function darken(hex, amount) {
-  const { r, g, b } = hexToRgb(hex);
-  return `rgb(${Math.round(r * (1 - amount))}, ${Math.round(g * (1 - amount))}, ${Math.round(b * (1 - amount))})`;
-}
-
-// 動態注入事件樣式
-function injectEventStyles() {
-  let css = '';
-  events.forEach(ev => {
-    const tagBg = lighten(ev.color, 0.55);
-    const fg = darken(ev.color, 0.35);
-    const segBg = lighten(ev.color, 0.75);
-    css += `
-      .tag-ev-${ev.id} { background: ${tagBg}; color: ${fg}; }
-      .seg-ev-${ev.id} { background: ${segBg}; color: ${fg}; }
-      .m-item.ev-${ev.id} { background: ${lighten(ev.color, 0.85)}; color: ${fg}; }
-    `;
-  });
-  let styleTag = document.getElementById('dynamicEventStyles');
-  if (!styleTag) {
-    styleTag = document.createElement('style');
-    styleTag.id = 'dynamicEventStyles';
-    document.head.appendChild(styleTag);
-  }
-  styleTag.textContent = css;
-}
-
 // ===== 事件配置 UI =====
 function renderEventList() {
   eventListEl.innerHTML = '';
@@ -573,7 +558,6 @@ function renderEventList() {
       if (confirm(`確定刪除「${ev.name}」？`)) {
         events = events.filter(e => e.id !== ev.id);
         saveSettings();
-        injectEventStyles();
         renderEventList();
         renderLegend();
         refreshCurrentView();
@@ -591,7 +575,7 @@ function renderLegend() {
 
   const menSpan = document.createElement('span');
   const menDot = document.createElement('i');
-  menDot.style.background = '#f8bbd0';
+  menDot.style.background = MENSTRUAL_COLOR;
   menSpan.appendChild(menDot);
   menSpan.appendChild(document.createTextNode('月經期'));
   legendEl.appendChild(menSpan);
@@ -607,13 +591,13 @@ function renderLegend() {
 
   const hSpan = document.createElement('span');
   const hDot = document.createElement('i');
-  hDot.style.background = '#a5d6a7';
+  hDot.style.background = HOLIDAY_COLOR;
   hSpan.appendChild(hDot);
   hSpan.appendChild(document.createTextNode('公眾假期'));
   legendEl.appendChild(hSpan);
 }
 
-// ===== 設定面板開關 =====
+// ===== 設定面板 =====
 settingsBtn.onclick = () => {
   renderEventList();
   settingsOverlay.classList.add('show');
@@ -676,7 +660,6 @@ editSave.onclick = () => {
   }
 
   saveSettings();
-  injectEventStyles();
   renderEventList();
   renderLegend();
   refreshCurrentView();
@@ -701,21 +684,34 @@ function getMatchingEvents(date) {
   return events.filter(ev => d >= ev.start && d <= ev.end);
 }
 
-function getDayInfo(dateObj) {
+// 收集某日所有「色條」：月經、假期、每個事件
+// 回傳陣列：[{ color, label }]
+function getDayStripes(dateObj) {
   const key = dateKey(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
   const holidayName = HOLIDAYS[key];
   const men = isMenstrual(dateObj);
-  const matchedEvents = getMatchingEvents(dateObj);
+  const matched = getMatchingEvents(dateObj);
+
+  const stripes = [];
+  if (men) stripes.push({ color: MENSTRUAL_COLOR, label: '月經期' });
+  if (holidayName) stripes.push({ color: HOLIDAY_COLOR, label: holidayName });
+  matched.forEach(ev => stripes.push({ color: ev.color, label: ev.name }));
+
+  return { stripes, holidayName, men, matched };
+}
+
+function getDayInfo(dateObj) {
+  const { holidayName, men, matched } = getDayStripes(dateObj);
   const cycleDay = getDayInCycle(dateObj);
 
   const items = [];
   if (holidayName) items.push({ type: 'holiday', text: '🎉 ' + holidayName });
-  matchedEvents.forEach(ev => {
-    items.push({ type: 'ev-' + ev.id, text: `📌 ${ev.name}（週期第 ${cycleDay} 天）` });
+  matched.forEach(ev => {
+    items.push({ type: 'ev', text: `📌 ${ev.name}（週期第 ${cycleDay} 天）`, color: ev.color });
   });
   if (men) items.push({ type: 'menstrual', text: '🩸 月經期（週期第 ' + cycleDay + ' 天）' });
 
-  return { holidayName, men, matchedEvents, items };
+  return { holidayName, men, matched, items };
 }
 
 // ===== 詳情 Modal =====
@@ -729,7 +725,17 @@ function showModal(dateObj, items) {
   modalList.innerHTML = '';
   items.forEach(it => {
     const div = document.createElement('div');
-    div.className = 'm-item ' + it.type;
+    div.className = 'm-item';
+    if (it.type === 'holiday') {
+      div.style.background = '#e8f5e9';
+      div.style.color = '#1b5e20';
+    } else if (it.type === 'menstrual') {
+      div.style.background = '#fce4ec';
+      div.style.color = '#880e4f';
+    } else if (it.color) {
+      div.style.background = lighten(it.color, 0.85);
+      div.style.color = darken(it.color, 0.4);
+    }
     div.textContent = it.text;
     modalList.appendChild(div);
   });
@@ -747,7 +753,24 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ===== 月曆渲染（重點：底色不被事件覆蓋）=====
+// ===== 建立格子頂部色條 =====
+// 關鍵：使用 flex:1 讓多個色條平均分割整個寬度
+function buildStripe(stripes, rounded) {
+  if (!stripes || stripes.length === 0) return null;
+  const stripe = document.createElement('div');
+  stripe.className = 'stripe';
+  if (!rounded) stripe.style.borderRadius = '0';
+  stripes.forEach(s => {
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.style.background = s.color;
+    bar.style.flex = '1';
+    stripe.appendChild(bar);
+  });
+  return stripe;
+}
+
+// ===== 月曆渲染 =====
 function renderMonth() {
   const monthNames = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
   titleEl.textContent = `${viewYear}年 ${monthNames[viewMonth]}`;
@@ -768,19 +791,13 @@ function renderMonth() {
     const cell = document.createElement('div');
     cell.className = 'cell';
     const dateObj = new Date(viewYear, viewMonth, d);
+    const { stripes } = getDayStripes(dateObj);
     const info = getDayInfo(dateObj);
 
-    // 底色優先順序：月經 > 假期 > 一般（互不覆蓋，兩者同時存在時疊加邊框）
-    if (info.men && info.holidayName) {
-      cell.classList.add('menstrual', 'holiday');
-    } else if (info.men) {
-      cell.classList.add('menstrual');
-    } else if (info.holidayName) {
-      cell.classList.add('holiday');
-    }
+    // 頂部色條：月經、假期、每個事件各一條，flex:1 平均分割
+    const stripe = buildStripe(stripes, true);
+    if (stripe) cell.appendChild(stripe);
 
-    // 自訂事件：用 has-event 邊框呈現，不覆蓋底色
-    if (info.matchedEvents.length > 0) cell.classList.add('has-event');
     if (sameDay(dateObj, today)) cell.classList.add('today');
 
     const num = document.createElement('span');
@@ -792,22 +809,27 @@ function renderMonth() {
       const tags = document.createElement('div');
       tags.className = 'tags';
 
-      // 標籤順序：假期 → 自訂事件 → 月經
       if (info.holidayName) {
         const t = document.createElement('span');
-        t.className = 'tag tag-holiday';
+        t.className = 'tag';
+        t.style.background = lighten(HOLIDAY_COLOR, 0.7);
+        t.style.color = darken(HOLIDAY_COLOR, 0.4);
         t.textContent = info.holidayName;
         tags.appendChild(t);
       }
-      info.matchedEvents.forEach(ev => {
+      info.matched.forEach(ev => {
         const t = document.createElement('span');
-        t.className = 'tag tag-ev-' + ev.id;
+        t.className = 'tag';
+        t.style.background = lighten(ev.color, 0.6);
+        t.style.color = darken(ev.color, 0.4);
         t.textContent = ev.name;
         tags.appendChild(t);
       });
       if (info.men) {
         const t = document.createElement('span');
-        t.className = 'tag tag-menstrual';
+        t.className = 'tag';
+        t.style.background = lighten(MENSTRUAL_COLOR, 0.7);
+        t.style.color = darken(MENSTRUAL_COLOR, 0.4);
         t.textContent = '月經';
         tags.appendChild(t);
       }
@@ -821,36 +843,47 @@ function renderMonth() {
 }
 
 // ===== 年曆渲染 =====
-function buildMiniDay(dateObj, info) {
+function buildMiniDay(dateObj, info, stripes) {
   const cell = document.createElement('div');
   cell.className = 'mini-day';
   if (sameDay(dateObj, today)) cell.classList.add('today');
 
-  // 年曆：優先級 假期 > 自訂事件 > 月經，最多 3 個色塊
-  const segments = [];
-  if (info.holidayName) segments.push({ cls: 'holiday', text: '假' });
-  info.matchedEvents.forEach(ev => {
-    if (segments.length < 3) segments.push({ cls: 'ev-' + ev.id, text: ev.name.charAt(0) });
-  });
-  if (segments.length === 0 && info.men) segments.push({ cls: 'menstrual', text: '經' });
+  // 年曆：上半部用色條（平均分割），下半部顯示日期或事件代表字
+  if (stripes.length > 0) {
+    const miniStripe = document.createElement('div');
+    miniStripe.style.cssText = 'position:absolute;top:0;left:0;right:0;height:3px;display:flex;';
+    stripes.forEach(s => {
+      const bar = document.createElement('div');
+      bar.style.cssText = `flex:1;background:${s.color};`;
+      miniStripe.appendChild(bar);
+    });
+    cell.appendChild(miniStripe);
+  }
 
-  if (segments.length === 0) {
+  // 內容：單一狀態顯示日期；多個狀態顯示代表字（避免太小看不到）
+  if (stripes.length === 0) {
     const seg = document.createElement('div');
     seg.className = 'seg plain';
     seg.textContent = dateObj.getDate();
+    seg.style.paddingTop = '0';
     cell.appendChild(seg);
-  } else if (segments.length === 1) {
+  } else if (stripes.length === 1) {
     const seg = document.createElement('div');
-    seg.className = 'seg ' + segments[0].cls;
+    seg.className = 'seg plain';
+    seg.style.background = lighten(stripes[0].color, 0.8);
+    seg.style.color = darken(stripes[0].color, 0.4);
+    seg.style.paddingTop = '2px';
     seg.textContent = dateObj.getDate();
     cell.appendChild(seg);
   } else {
-    segments.forEach(s => {
-      const seg = document.createElement('div');
-      seg.className = 'seg ' + s.cls;
-      seg.textContent = s.text;
-      cell.appendChild(seg);
-    });
+    const seg = document.createElement('div');
+    seg.className = 'seg plain';
+    seg.style.paddingTop = '2px';
+    seg.style.background = 'transparent';
+    // 多狀態時僅顯示數字，靠頂部色條區分
+    seg.textContent = dateObj.getDate();
+    seg.style.color = '#444';
+    cell.appendChild(seg);
     cell.title = dateObj.getDate() + '日';
   }
 
@@ -907,8 +940,9 @@ function renderYear() {
 
     for (let d = 1; d <= daysInMonth; d++) {
       const dateObj = new Date(y, m, d);
+      const { stripes } = getDayStripes(dateObj);
       const info = getDayInfo(dateObj);
-      daysWrap.appendChild(buildMiniDay(dateObj, info));
+      daysWrap.appendChild(buildMiniDay(dateObj, info, stripes));
     }
 
     mini.appendChild(daysWrap);
@@ -1051,7 +1085,6 @@ function init() {
   yearStartMonth = 0;
   yearStartInput.value = `${yearStartYear}-01`;
 
-  injectEventStyles();
   renderLegend();
   renderMonth();
 }
