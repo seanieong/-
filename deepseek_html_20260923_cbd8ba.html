@@ -10,15 +10,78 @@
   body { background: #f9f5f7; display: flex; flex-direction: column; align-items: stretch; }
   .app { width: 100%; background: #fff; padding: 8px 6px 14px; }
   h1 { font-size: 1.05rem; color: #4a2c3a; text-align: center; margin: 0 0 8px; }
+
   .input-row { background: #fdf3f7; border-radius: 12px; padding: 9px; margin-bottom: 9px; display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
   .input-row label { font-size: 0.7rem; color: #8b5e7b; font-weight: 500; display: block; margin-bottom: 2px; }
   .input-row input { width: 100%; padding: 6px 8px; border: 1px solid #e7c6d5; border-radius: 8px; font-size: 0.83rem; outline: none; }
   .input-row input:focus { border-color: #b989a5; }
   .input-row button { grid-column: span 2; background: #b989a5; color: #fff; border: none; padding: 8px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; }
   .input-row button:hover { background: #a0758b; }
+
   .view-tabs { display: flex; justify-content: center; gap: 6px; margin-bottom: 9px; }
   .view-tabs button { background: #fdf3f7; color: #8b5e7b; border: 1px solid #e7c6d5; padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
   .view-tabs button.active { background: #b989a5; color: #fff; border-color: #b989a5; }
+
+  /* ===== 事件配置區 ===== */
+  .config-section { background: #f7f3fa; border-radius: 12px; padding: 10px; margin-bottom: 10px; }
+  .config-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .config-header h2 { font-size: 0.85rem; color: #4a2c3a; margin: 0; }
+  .config-header button { background: #b989a5; color: #fff; border: none; padding: 5px 12px; border-radius: 16px; font-size: 0.72rem; font-weight: 600; cursor: pointer; }
+  .config-header button:hover { background: #a0758b; }
+
+  .event-list { display: flex; flex-direction: column; gap: 6px; }
+  .event-item {
+    display: flex; align-items: center; gap: 8px;
+    background: #fff; border-radius: 8px; padding: 6px 8px;
+    border: 1px solid #e7d6e0; font-size: 0.72rem;
+  }
+  .event-color-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
+  .event-name { flex: 1; font-weight: 600; color: #4a2c3a; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .event-range { color: #8b5e7b; font-size: 0.68rem; white-space: nowrap; }
+  .event-actions { display: flex; gap: 4px; }
+  .event-actions button {
+    background: none; border: none; cursor: pointer; font-size: 0.75rem;
+    padding: 3px 5px; border-radius: 4px; color: #8b5e7b;
+  }
+  .event-actions button:hover { background: #fdf3f7; }
+  .event-actions .del:hover { background: #ffebee; color: #c62828; }
+
+  /* 編輯表單 modal */
+  .edit-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: none; align-items: center; justify-content: center; z-index: 200; padding: 16px;
+  }
+  .edit-overlay.show { display: flex; }
+  .edit-modal {
+    background: #fff; border-radius: 16px; padding: 18px 20px;
+    max-width: 360px; width: 100%; box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  }
+  .edit-modal h3 { margin: 0 0 14px; font-size: 0.95rem; color: #4a2c3a; text-align: center; }
+  .edit-field { margin-bottom: 10px; }
+  .edit-field label { display: block; font-size: 0.72rem; color: #8b5e7b; font-weight: 500; margin-bottom: 3px; }
+  .edit-field input[type="text"], .edit-field input[type="number"] {
+    width: 100%; padding: 7px 9px; border: 1px solid #e7c6d5; border-radius: 8px;
+    font-size: 0.85rem; outline: none;
+  }
+  .edit-field input:focus { border-color: #b989a5; }
+  .edit-field .range-row { display: flex; align-items: center; gap: 6px; }
+  .edit-field .range-row input { flex: 1; }
+  .edit-field .range-row span { font-size: 0.78rem; color: #8b5e7b; }
+  .edit-field input[type="color"] {
+    width: 100%; height: 36px; padding: 2px; border: 1px solid #e7c6d5;
+    border-radius: 8px; cursor: pointer; background: #fff;
+  }
+  .edit-buttons { display: flex; gap: 8px; margin-top: 14px; }
+  .edit-buttons button {
+    flex: 1; padding: 9px; border-radius: 8px; font-size: 0.85rem;
+    font-weight: 600; cursor: pointer; border: none;
+  }
+  .edit-buttons .cancel { background: #f0e6ec; color: #6a4a5a; }
+  .edit-buttons .cancel:hover { background: #e7d6e0; }
+  .edit-buttons .save { background: #b989a5; color: #fff; }
+  .edit-buttons .save:hover { background: #a0758b; }
+
+  /* ===== 月曆 ===== */
   .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
   .nav button { background: none; border: 1px solid #e7c6d5; color: #8b5e7b; font-size: 1rem; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
   .nav button:hover { background: #fdf3f7; }
@@ -26,24 +89,28 @@
   .swipe-area, .year-swipe-area { overflow: hidden; touch-action: pan-y; user-select: none; }
   .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.64rem; font-weight: 600; color: #8b5e7b; margin-bottom: 3px; }
   .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-  .cell { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; border-radius: 6px; font-size: 0.72rem; font-weight: 500; background: #fafafa; color: #333; position: relative; padding: 2px 1px; text-align: center; overflow: hidden; line-height: 1.1; cursor: pointer; transition: transform 0.1s; }
+  .cell {
+    aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    border-radius: 6px; font-size: 0.72rem; font-weight: 500; background: #fafafa; color: #333;
+    position: relative; padding: 2px 1px; text-align: center; overflow: hidden; line-height: 1.1;
+    cursor: pointer; transition: transform 0.1s;
+  }
   .cell:hover { transform: scale(1.03); z-index: 2; }
   .cell.empty { background: transparent; cursor: default; }
   .cell.empty:hover { transform: none; }
   .cell.today { box-shadow: inset 0 0 0 2px #b989a5; font-weight: 700; }
   .cell.menstrual { background: #fce4ec; color: #c2185b; }
-  .cell.holiday { background: #e8f5e9; color: #2e7d32; }
-  .cell.ovulation { background: #ede7f6; color: #6a1b9a; }
-  .cell.ivf { background: #fff3e0; color: #e65100; }
   .cell.multi { box-shadow: inset 0 0 0 2px #66bb6a; }
   .cell.today.multi { box-shadow: inset 0 0 0 2px #b989a5, inset 0 0 0 4px #66bb6a; }
   .cell .num { font-size: 0.72rem; font-weight: 700; }
   .cell .tags { display: flex; flex-direction: column; gap: 1px; margin-top: 1px; width: 100%; }
-  .cell .tag { font-size: 0.42rem; font-weight: 700; display: block; padding: 1px 2px; border-radius: 3px; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tag-holiday { background: #a5d6a7; color: #1b5e20; }
-  .tag-ovulation { background: #d1c4e9; color: #4a148c; }
-  .tag-ivf { background: #ffcc80; color: #bf360c; }
-  .tag-menstrual { background: #f8bbd0; color: #880e4f; }
+  .cell .tag {
+    font-size: 0.42rem; font-weight: 700; display: block;
+    padding: 1px 2px; border-radius: 3px; line-height: 1.05;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ===== 年曆 ===== */
   .year-view { display: none; }
   .year-view.active { display: block; }
   .month-view { display: block; }
@@ -71,21 +138,16 @@
   .mini-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
   .mini-day { aspect-ratio: 1; display: flex; align-items: stretch; justify-content: stretch; font-size: 0.5rem; border-radius: 3px; background: #fff; overflow: hidden; position: relative; border: 1px solid #f0e6ec; }
   .mini-day.empty { background: transparent; border: none; }
-  .mini-day .seg { flex: 1; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #555; font-size: 0.48rem; min-width: 0; overflow: hidden; }
-  .seg.holiday { background: #e8f5e9; color: #2e7d32; }
-  .seg.ivf { background: #fff3e0; color: #e65100; }
-  .seg.ovulation { background: #ede7f6; color: #6a1b9a; }
-  .seg.menstrual { background: #fce4ec; color: #c2185b; }
+  .mini-day .seg { flex: 1; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.48rem; min-width: 0; overflow: hidden; }
   .seg.plain { background: #fff; color: #666; }
   .mini-day.today .seg { box-shadow: inset 0 0 0 1.5px #b989a5; }
   .mini-day.today { border-color: #b989a5; }
+
   .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-top: 10px; font-size: 0.64rem; color: #666; }
   .legend span { display: flex; align-items: center; gap: 3px; }
   .legend i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
-  .legend .m { background: #f8bbd0; }
-  .legend .o { background: #d1c4e9; }
-  .legend .ivf { background: #ffcc80; }
-  .legend .h { background: #a5d6a7; }
+
+  /* ===== 詳情 Modal ===== */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
   .modal-overlay.show { display: flex; }
   .modal { background: #fff; border-radius: 16px; padding: 18px 20px; max-width: 340px; width: 100%; box-shadow: 0 15px 40px rgba(0,0,0,0.15); text-align: center; animation: pop 0.15s ease-out; }
@@ -93,10 +155,6 @@
   .modal .m-date { font-size: 0.85rem; color: #8b5e7b; margin-bottom: 10px; font-weight: 600; }
   .modal .m-list { display: flex; flex-direction: column; gap: 6px; }
   .modal .m-item { padding: 8px 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; word-break: break-word; text-align: left; }
-  .modal .m-item.holiday { background: #e8f5e9; color: #1b5e20; }
-  .modal .m-item.ovulation { background: #ede7f6; color: #4a148c; }
-  .modal .m-item.ivf { background: #fff3e0; color: #bf360c; }
-  .modal .m-item.menstrual { background: #fce4ec; color: #880e4f; }
   .modal .m-close { margin-top: 14px; background: #b989a5; color: #fff; border: none; padding: 8px 20px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; font-weight: 500; }
   .modal .m-close:hover { background: #a0758b; }
   .hint { text-align:center; font-size:0.64rem; color:#aaa; margin:8px 0 0; }
@@ -116,6 +174,15 @@
       <input type="number" id="cycleLen" value="27" min="20" max="45">
     </div>
     <button id="calcBtn">預測並更新</button>
+  </div>
+
+  <!-- 事件配置區 -->
+  <div class="config-section">
+    <div class="config-header">
+      <h2>🎨 自訂事件配置</h2>
+      <button id="addEventBtn">＋ 新增</button>
+    </div>
+    <div class="event-list" id="eventList"></div>
   </div>
 
   <div class="view-tabs">
@@ -155,19 +222,42 @@
     <p class="hint">💡 左右滑動切換區間，點擊日期查看完整資訊（最多 3 色平均分割）</p>
   </div>
 
-  <div class="legend">
-    <span><i class="m"></i> 月經期</span>
-    <span><i class="o"></i> 排卵日</span>
-    <span><i class="ivf"></i> IVF 植入日</span>
-    <span><i class="h"></i> 公眾假期</span>
-  </div>
+  <div class="legend" id="legend"></div>
 </div>
 
+<!-- 詳情 Modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="m-date" id="modalDate"></div>
     <div class="m-list" id="modalList"></div>
     <button class="m-close" id="modalClose">關閉</button>
+  </div>
+</div>
+
+<!-- 事件編輯 Modal -->
+<div class="edit-overlay" id="editOverlay">
+  <div class="edit-modal">
+    <h3 id="editTitle">新增事件</h3>
+    <div class="edit-field">
+      <label>名稱</label>
+      <input type="text" id="editName" maxlength="20" placeholder="例如：排卵日">
+    </div>
+    <div class="edit-field">
+      <label>顯示範圍（月經第幾天）</label>
+      <div class="range-row">
+        <input type="number" id="editStart" min="1" max="60" placeholder="起">
+        <span>～</span>
+        <input type="number" id="editEnd" min="1" max="60" placeholder="迄">
+      </div>
+    </div>
+    <div class="edit-field">
+      <label>顏色</label>
+      <input type="color" id="editColor" value="#6a1b9a">
+    </div>
+    <div class="edit-buttons">
+      <button class="cancel" id="editCancel">取消</button>
+      <button class="save" id="editSave">儲存</button>
+    </div>
   </div>
 </div>
 
@@ -232,10 +322,15 @@ const HOLIDAYS = {
 const DEFAULT_LAST_PERIOD = '2026-10-11';
 const DEFAULT_CYCLE_LEN = 27;
 const PERIOD_LEN = 5;
-const IVF_START = 18;
-const IVF_END = 22;
 
-// ===== 關鍵：本地時間解析，避免時區偏移 =====
+// ===== 預設事件配置 =====
+const DEFAULT_EVENTS = [
+  { id: 'ovulation', name: '排卵日', start: 13, end: 13, color: '#6a1b9a' },
+  { id: 'ivf',       name: '植入日', start: 18, end: 22, color: '#e65100' },
+  { id: 'egg',       name: '取卵日', start: 12, end: 16, color: '#4fc3f7' }
+];
+
+// ===== 本地時間解析，避免時區偏移 =====
 function parseLocalDate(str) {
   if (!str) return null;
   const [y, m, d] = str.split('-').map(Number);
@@ -247,24 +342,48 @@ function formatInputDate(dateObj) {
   const d = String(dateObj.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
 }
+function pad(n) { return n.toString().padStart(2, '0'); }
+function dateKey(y, m, d) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
+function sameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+function daysBetween(a, b) {
+  const aMid = new Date(a.getFullYear(), a.getMonth(), a.getDate());
+  const bMid = new Date(b.getFullYear(), b.getMonth(), b.getDate());
+  return Math.round((aMid - bMid) / 86400000);
+}
 
-// ===== 記住上次輸入 =====
-const STORAGE_KEY = 'macau_cycle_predictor_v1';
-function loadSaved() {
+// ===== 儲存設定 =====
+const STORAGE_KEY = 'macau_cycle_predictor_v2';
+
+function loadSettings() {
+  let data = null;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const data = JSON.parse(raw);
-    if (!data.lastPeriod || !data.cycleLen) return null;
-    return data;
-  } catch (e) { return null; }
+    if (raw) data = JSON.parse(raw);
+  } catch (e) {}
+  if (!data) {
+    return {
+      lastPeriod: DEFAULT_LAST_PERIOD,
+      cycleLen: DEFAULT_CYCLE_LEN,
+      events: JSON.parse(JSON.stringify(DEFAULT_EVENTS))
+    };
+  }
+  return {
+    lastPeriod: data.lastPeriod || DEFAULT_LAST_PERIOD,
+    cycleLen: (data.cycleLen >= 20 && data.cycleLen <= 45) ? data.cycleLen : DEFAULT_CYCLE_LEN,
+    events: Array.isArray(data.events) && data.events.length > 0
+      ? data.events
+      : JSON.parse(JSON.stringify(DEFAULT_EVENTS))
+  };
 }
-function saveSettings(lastPeriodStr, cycleLenVal) {
+
+function saveSettings() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      lastPeriod: lastPeriodStr,
-      cycleLen: cycleLenVal,
-      savedAt: Date.now()
+      lastPeriod: formatInputDate(lastPeriod),
+      cycleLen: cycleLen,
+      events: events
     }));
   } catch (e) {}
 }
@@ -275,6 +394,7 @@ today.setHours(0, 0, 0, 0);
 let viewYear, viewMonth;
 let yearStartYear, yearStartMonth;
 let lastPeriod, cycleLen;
+let events = [];
 
 // ===== DOM =====
 const gridEl = document.getElementById('grid');
@@ -300,40 +420,223 @@ const modalOverlay = document.getElementById('modalOverlay');
 const modalDate = document.getElementById('modalDate');
 const modalList = document.getElementById('modalList');
 const modalClose = document.getElementById('modalClose');
+const legendEl = document.getElementById('legend');
 
-// ===== 載入設定（優先使用上次輸入）=====
-function initSettings() {
-  const saved = loadSaved();
-  if (saved) {
-    lastPeriod = parseLocalDate(saved.lastPeriod) || parseLocalDate(DEFAULT_LAST_PERIOD);
-    cycleLen = (saved.cycleLen >= 20 && saved.cycleLen <= 45) ? saved.cycleLen : DEFAULT_CYCLE_LEN;
-    lastPeriodInput.value = formatInputDate(lastPeriod);
-    cycleInput.value = cycleLen;
-  } else {
-    lastPeriod = parseLocalDate(DEFAULT_LAST_PERIOD);
-    cycleLen = DEFAULT_CYCLE_LEN;
-    lastPeriodInput.value = DEFAULT_LAST_PERIOD;
-    cycleInput.value = DEFAULT_CYCLE_LEN;
+// 事件配置 UI
+const eventListEl = document.getElementById('eventList');
+const addEventBtn = document.getElementById('addEventBtn');
+const editOverlay = document.getElementById('editOverlay');
+const editTitle = document.getElementById('editTitle');
+const editName = document.getElementById('editName');
+const editStart = document.getElementById('editStart');
+const editEnd = document.getElementById('editEnd');
+const editColor = document.getElementById('editColor');
+const editCancel = document.getElementById('editCancel');
+const editSave = document.getElementById('editSave');
+
+let editingId = null; // null = 新增
+
+// ===== 顏色工具 =====
+function hexToRgb(hex) {
+  const h = hex.replace('#', '');
+  return {
+    r: parseInt(h.substring(0, 2), 16),
+    g: parseInt(h.substring(2, 4), 16),
+    b: parseInt(h.substring(4, 6), 16)
+  };
+}
+function lighten(hex, amount) {
+  const { r, g, b } = hexToRgb(hex);
+  const lr = Math.round(r + (255 - r) * amount);
+  const lg = Math.round(g + (255 - g) * amount);
+  const lb = Math.round(b + (255 - b) * amount);
+  return `rgb(${lr}, ${lg}, ${lb})`;
+}
+function darken(hex, amount) {
+  const { r, g, b } = hexToRgb(hex);
+  const dr = Math.round(r * (1 - amount));
+  const dg = Math.round(g * (1 - amount));
+  const db = Math.round(b * (1 - amount));
+  return `rgb(${dr}, ${dg}, ${db})`;
+}
+
+// 動態注入事件樣式
+function injectEventStyles() {
+  let css = '';
+  events.forEach(ev => {
+    const bg = lighten(ev.color, 0.85);
+    const bgSeg = lighten(ev.color, 0.75);
+    const fg = darken(ev.color, 0.35);
+    css += `
+      .cell.ev-${ev.id} { background: ${bg}; color: ${fg}; }
+      .tag-ev-${ev.id} { background: ${lighten(ev.color, 0.55)}; color: ${fg}; }
+      .seg-ev-${ev.id} { background: ${bgSeg}; color: ${fg}; }
+      .m-item.ev-${ev.id} { background: ${bg}; color: ${fg}; }
+    `;
+  });
+  let styleTag = document.getElementById('dynamicEventStyles');
+  if (!styleTag) {
+    styleTag = document.createElement('style');
+    styleTag.id = 'dynamicEventStyles';
+    document.head.appendChild(styleTag);
   }
-  viewYear = lastPeriod.getFullYear();
-  viewMonth = lastPeriod.getMonth();
-  yearStartYear = viewYear;
-  yearStartMonth = 0;
-  yearStartInput.value = `${yearStartYear}-01`;
+  styleTag.textContent = css;
 }
 
-// ===== 工具 =====
-function pad(n) { return n.toString().padStart(2, '0'); }
-function dateKey(y, m, d) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
-function sameDay(a, b) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+// ===== 事件配置渲染 =====
+function renderEventList() {
+  eventListEl.innerHTML = '';
+  if (events.length === 0) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'text-align:center;font-size:0.7rem;color:#aaa;padding:8px;';
+    empty.textContent = '尚未配置任何事件，點擊右上角「＋ 新增」';
+    eventListEl.appendChild(empty);
+    return;
+  }
+  events.forEach(ev => {
+    const item = document.createElement('div');
+    item.className = 'event-item';
+
+    const dot = document.createElement('span');
+    dot.className = 'event-color-dot';
+    dot.style.background = ev.color;
+    item.appendChild(dot);
+
+    const name = document.createElement('span');
+    name.className = 'event-name';
+    name.textContent = ev.name;
+    item.appendChild(name);
+
+    const range = document.createElement('span');
+    range.className = 'event-range';
+    range.textContent = ev.start === ev.end
+      ? `第 ${ev.start} 日`
+      : `第 ${ev.start}～${ev.end} 日`;
+    item.appendChild(range);
+
+    const actions = document.createElement('div');
+    actions.className = 'event-actions';
+
+    const editBtn = document.createElement('button');
+    editBtn.textContent = '✏️';
+    editBtn.title = '編輯';
+    editBtn.onclick = () => openEditModal(ev.id);
+    actions.appendChild(editBtn);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del';
+    delBtn.textContent = '🗑️';
+    delBtn.title = '刪除';
+    delBtn.onclick = () => {
+      if (confirm(`確定刪除「${ev.name}」？`)) {
+        events = events.filter(e => e.id !== ev.id);
+        saveSettings();
+        injectEventStyles();
+        renderEventList();
+        renderLegend();
+        refreshCurrentView();
+      }
+    };
+    actions.appendChild(delBtn);
+
+    item.appendChild(actions);
+    eventListEl.appendChild(item);
+  });
 }
-function daysBetween(a, b) {
-  // 以「本地日期」計算相差天數，避免 DST 與時區問題
-  const aMid = new Date(a.getFullYear(), a.getMonth(), a.getDate());
-  const bMid = new Date(b.getFullYear(), b.getMonth(), b.getDate());
-  return Math.round((aMid - bMid) / 86400000);
+
+function renderLegend() {
+  legendEl.innerHTML = '';
+  // 月經
+  const menSpan = document.createElement('span');
+  const menDot = document.createElement('i');
+  menDot.style.background = '#f8bbd0';
+  menSpan.appendChild(menDot);
+  menSpan.appendChild(document.createTextNode('月經期'));
+  legendEl.appendChild(menSpan);
+
+  // 動態事件
+  events.forEach(ev => {
+    const span = document.createElement('span');
+    const dot = document.createElement('i');
+    dot.style.background = ev.color;
+    span.appendChild(dot);
+    span.appendChild(document.createTextNode(ev.name));
+    legendEl.appendChild(span);
+  });
+
+  // 假期
+  const hSpan = document.createElement('span');
+  const hDot = document.createElement('i');
+  hDot.style.background = '#a5d6a7';
+  hSpan.appendChild(hDot);
+  hSpan.appendChild(document.createTextNode('公眾假期'));
+  legendEl.appendChild(hSpan);
 }
+
+// ===== 編輯 Modal =====
+function openEditModal(id) {
+  editingId = id;
+  if (id) {
+    const ev = events.find(e => e.id === id);
+    if (!ev) return;
+    editTitle.textContent = '編輯事件';
+    editName.value = ev.name;
+    editStart.value = ev.start;
+    editEnd.value = ev.end;
+    editColor.value = ev.color;
+  } else {
+    editTitle.textContent = '新增事件';
+    editName.value = '';
+    editStart.value = '';
+    editEnd.value = '';
+    editColor.value = '#6a1b9a';
+  }
+  editOverlay.classList.add('show');
+}
+function closeEditModal() {
+  editOverlay.classList.remove('show');
+  editingId = null;
+}
+editCancel.onclick = closeEditModal;
+editOverlay.onclick = (e) => {
+  if (e.target === editOverlay) closeEditModal();
+};
+
+editSave.onclick = () => {
+  const name = editName.value.trim();
+  const start = parseInt(editStart.value);
+  const end = parseInt(editEnd.value);
+  const color = editColor.value;
+
+  if (!name) { alert('請輸入名稱'); return; }
+  if (!start || !end || start < 1 || end < 1) { alert('請輸入有效的起始與結束日（≥1）'); return; }
+  if (start > end) { alert('起始日不能大於結束日'); return; }
+
+  if (editingId) {
+    const ev = events.find(e => e.id === editingId);
+    if (ev) {
+      ev.name = name;
+      ev.start = start;
+      ev.end = end;
+      ev.color = color;
+    }
+  } else {
+    // 產生唯一 id
+    const id = 'ev' + Date.now() + Math.floor(Math.random() * 1000);
+    events.push({ id, name, start, end, color });
+  }
+
+  saveSettings();
+  injectEventStyles();
+  renderEventList();
+  renderLegend();
+  refreshCurrentView();
+  closeEditModal();
+};
+
+addEventBtn.onclick = () => openEditModal(null);
+
+// ===== 判斷某日屬於哪些事件 =====
 function getDayInCycle(date) {
   const diff = daysBetween(date, lastPeriod);
   if (diff < 0) return -1;
@@ -343,33 +646,30 @@ function isMenstrual(date) {
   const d = getDayInCycle(date);
   return d >= 1 && d <= PERIOD_LEN;
 }
-function isOvulation(date) {
+function getMatchingEvents(date) {
   const d = getDayInCycle(date);
-  return d === (cycleLen - 14);
-}
-function isIVF(date) {
-  const d = getDayInCycle(date);
-  return d >= IVF_START && d <= IVF_END;
+  if (d < 1) return [];
+  return events.filter(ev => d >= ev.start && d <= ev.end);
 }
 
 function getDayInfo(dateObj) {
   const key = dateKey(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
   const holidayName = HOLIDAYS[key];
   const men = isMenstrual(dateObj);
-  const ovu = isOvulation(dateObj);
-  const ivf = isIVF(dateObj);
+  const matchedEvents = getMatchingEvents(dateObj);
   const cycleDay = getDayInCycle(dateObj);
 
   const items = [];
   if (holidayName) items.push({ type: 'holiday', text: '🎉 ' + holidayName });
-  if (ivf) items.push({ type: 'ivf', text: '🧬 IVF 植入日（週期第 ' + cycleDay + ' 天）' });
-  if (ovu) items.push({ type: 'ovulation', text: '🥚 預測排卵日（週期第 ' + cycleDay + ' 天）' });
+  matchedEvents.forEach(ev => {
+    items.push({ type: 'ev-' + ev.id, text: `📌 ${ev.name}（週期第 ${cycleDay} 天）` });
+  });
   if (men) items.push({ type: 'menstrual', text: '🩸 月經期（週期第 ' + cycleDay + ' 天）' });
 
-  return { holidayName, men, ovu, ivf, items };
+  return { holidayName, men, matchedEvents, items };
 }
 
-// ===== Modal =====
+// ===== Modal 詳情 =====
 function showModal(dateObj, items) {
   const y = dateObj.getFullYear();
   const m = dateObj.getMonth() + 1;
@@ -391,7 +691,10 @@ modalOverlay.onclick = (e) => {
   if (e.target === modalOverlay) modalOverlay.classList.remove('show');
 };
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') modalOverlay.classList.remove('show');
+  if (e.key === 'Escape') {
+    modalOverlay.classList.remove('show');
+    editOverlay.classList.remove('show');
+  }
 });
 
 // ===== 月曆渲染 =====
@@ -419,9 +722,10 @@ function renderMonth() {
 
     if (info.men) cell.classList.add('menstrual');
     if (info.holidayName) cell.classList.add('holiday');
-    if (info.ovu) cell.classList.add('ovulation');
-    if (info.ivf) cell.classList.add('ivf');
-    const specialCount = [info.holidayName, info.ovu, info.ivf].filter(Boolean).length;
+    info.matchedEvents.forEach(ev => cell.classList.add('ev-' + ev.id));
+
+    // 多重特殊狀態（假期 + 自訂事件，或自訂事件多於 1 個）加邊框
+    const specialCount = [info.holidayName].filter(Boolean).length + info.matchedEvents.length;
     if (specialCount >= 2) cell.classList.add('multi');
     if (sameDay(dateObj, today)) cell.classList.add('today');
 
@@ -439,18 +743,12 @@ function renderMonth() {
         t.textContent = info.holidayName;
         tags.appendChild(t);
       }
-      if (info.ivf) {
+      info.matchedEvents.forEach(ev => {
         const t = document.createElement('span');
-        t.className = 'tag tag-ivf';
-        t.textContent = '植入日';
+        t.className = 'tag tag-ev-' + ev.id;
+        t.textContent = ev.name;
         tags.appendChild(t);
-      }
-      if (info.ovu) {
-        const t = document.createElement('span');
-        t.className = 'tag tag-ovulation';
-        t.textContent = '排卵日';
-        tags.appendChild(t);
-      }
+      });
       if (info.men) {
         const t = document.createElement('span');
         t.className = 'tag tag-menstrual';
@@ -471,10 +769,12 @@ function buildMiniDay(dateObj, info) {
   cell.className = 'mini-day';
   if (sameDay(dateObj, today)) cell.classList.add('today');
 
+  // 依優先級：假期 > 自訂事件（依配置順序）> 月經，最多 3 個
   const segments = [];
   if (info.holidayName) segments.push({ cls: 'holiday', text: '假' });
-  if (info.ivf) segments.push({ cls: 'ivf', text: '植' });
-  if (info.ovu) segments.push({ cls: 'ovulation', text: '卵' });
+  info.matchedEvents.forEach(ev => {
+    if (segments.length < 3) segments.push({ cls: 'ev-' + ev.id, text: ev.name.charAt(0) });
+  });
   if (segments.length === 0 && info.men) segments.push({ cls: 'menstrual', text: '經' });
 
   if (segments.length === 0) {
@@ -556,6 +856,14 @@ function renderYear() {
 
     mini.appendChild(daysWrap);
     yearGridEl.appendChild(mini);
+  }
+}
+
+function refreshCurrentView() {
+  if (yearView.classList.contains('active')) {
+    renderYear();
+  } else {
+    renderMonth();
   }
 }
 
@@ -648,7 +956,7 @@ function bindSwipe(el, onLeft, onRight) {
 bindSwipe(swipeArea, () => nextBtn.click(), () => prevBtn.click());
 bindSwipe(yearSwipeArea, () => nextYearBtn.click(), () => prevYearBtn.click());
 
-// ===== 計算並記住 =====
+// ===== 計算 =====
 calcBtn.onclick = () => {
   const v = lastPeriodInput.value;
   if (!v) { alert('請選擇上次月經第一天'); return; }
@@ -657,8 +965,7 @@ calcBtn.onclick = () => {
   cycleLen = (c >= 20 && c <= 45) ? c : DEFAULT_CYCLE_LEN;
   cycleInput.value = cycleLen;
 
-  // 記住本次輸入
-  saveSettings(v, cycleLen);
+  saveSettings();
 
   viewYear = lastPeriod.getFullYear();
   viewMonth = lastPeriod.getMonth();
@@ -672,8 +979,27 @@ calcBtn.onclick = () => {
 };
 
 // ===== 初始化 =====
-initSettings();
-renderMonth();
+function init() {
+  const settings = loadSettings();
+  lastPeriod = parseLocalDate(settings.lastPeriod) || parseLocalDate(DEFAULT_LAST_PERIOD);
+  cycleLen = settings.cycleLen;
+  events = settings.events;
+
+  lastPeriodInput.value = formatInputDate(lastPeriod);
+  cycleInput.value = cycleLen;
+
+  viewYear = lastPeriod.getFullYear();
+  viewMonth = lastPeriod.getMonth();
+  yearStartYear = viewYear;
+  yearStartMonth = 0;
+  yearStartInput.value = `${yearStartYear}-01`;
+
+  injectEventStyles();
+  renderEventList();
+  renderLegend();
+  renderMonth();
+}
+init();
 </script>
 </body>
 </html>
